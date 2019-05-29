@@ -23,6 +23,10 @@ const init = function () {
         if (event.candidate) this.emit('icecandidate', event.candidate)
     }
 
+    peerConnection.ontrack = event => { 
+        this.emit('track', event)
+    }
+
     const setLocalDescription = offer =>
         peerConnection.setLocalDescription(new (RTCSessionDescription || wrtc.RTCSessionDescription)(offer))
 
