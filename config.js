@@ -1,4 +1,4 @@
-export let debug = {
+const debug = {
     name: {
         string: '[Simple WebRTC]',
 
@@ -15,4 +15,8 @@ export let debug = {
     },
 
     active: true
+}
+
+module.exports = {
+	debug
 }

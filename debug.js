@@ -1,4 +1,4 @@
-import {debug} from './config.js'
+const { debug } = require('./config.js')
 
 const parseMessage = (type, message, object, nameStyles = '', messageStyles = '') => {
     for (const i of Object.keys(debug.name.style)) 
@@ -15,6 +15,6 @@ const error =  (message, object) => parseMessage('error', message, object)
 const dir =  (message, object) => parseMessage('dir', message, object)
 const warn =  (message, object) => parseMessage('warn', message, object)
 
-export default {
+module.exports = {
     log, error, dir, warn
 }

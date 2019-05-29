@@ -1,14 +1,15 @@
 {
-	"name": "simple_webrtc",
+	"name": "@andrewrivers/simple_webrtc",
 	"description": "A light wrapper for WebRTC communication.",
 	"main": "index.js",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"author": {
 		"name": "Andres Sweeney-Rios",
 		"email": "andrewarivers@gmail.com",
 		"url": "https://poisonapple.dev"
 	},
 	"license": "MIT",
+	"repository": "",
 	"keywords": [
 		"webrtc"
 	]

@@ -1,6 +1,6 @@
-import Debug from './debug.js'
+const Debug = require('./debug.js')
 
-export default context => {
+module.exports = context => {
     const events = {}
 
     context.on = (event, callback = () => {}) => {

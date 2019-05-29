@@ -1,6 +1,6 @@
-import Emitter from './emitter.js'
+const Emitter = require('./emitter.js')
 
-const init = function () {
+module.exports = function () {
     Emitter(this)
 
     const peerConnection = new RTCPeerConnection()
@@ -71,5 +71,3 @@ const init = function () {
 
     this.send = data => dataChannel.send(JSON.stringify(data))
 }
-
-export default init
