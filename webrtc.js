@@ -69,5 +69,10 @@ module.exports = function () {
             peerConnection.addIceCandidate(new (RTCIceCandidate || wrtc.RTCIceCandidate)(candidates))
     }
 
+	this.addTrack = (track, streams = []) => {
+		if (!Array.isArray(streams)) streams = [streams]
+		peerConnection.addTrack(track, ...streams)
+	}
+
     this.send = data => dataChannel.send(JSON.stringify(data))
 }
