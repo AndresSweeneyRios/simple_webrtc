@@ -1,9 +1,9 @@
 const Emitter = require('./emitter.js')
 
-module.exports = function () {
+module.exports = function (config = {}) {
     Emitter(this)
 
-    const peerConnection = new RTCPeerConnection()
+    const peerConnection = new RTCPeerConnection(config)
     this.peerConnection = peerConnection;
 
     peerConnection.ondatachannel = event => {
