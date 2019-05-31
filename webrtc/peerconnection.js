@@ -1,5 +1,3 @@
-import Debug from '../util/debug.js'
-
 export default class extends RTCPeerConnection {
 	candidates = []
 	datachannels = []
@@ -10,9 +8,12 @@ export default class extends RTCPeerConnection {
 		this.events = events
 		this.config = config
 		this.emit = emit
-	
+
 		this.addEventListener('datachannel', event => {
-			event.channel.onopen = () => this.emit('open')
+			event.channel.onopen = () => {
+				this.emit('open')
+				this.emit('log', 'datachannel open')
+			}
 			
 			event.channel.onmessage = message => this.emit(
 				'message', 
@@ -22,11 +23,11 @@ export default class extends RTCPeerConnection {
 					: message.data
 			)
 	
-			event.channel.onerror = error => this.emit('error', error)
+			event.channel.onerror = error => this.emit('error', 'DataChannel', error)
 		})
 		
 		this.addEventListener('error', event => {
-			this.emit('error', event)
+			this.emit('error', 'RTCPeerConnection', event)
 		})
 		
 		this.addEventListener('icecandidate', event => {
@@ -35,22 +36,27 @@ export default class extends RTCPeerConnection {
 			if (event.candidate) {
 				this.candidates.push(event.candidate)
 			}
+
+			this.emit('log', 'found ice candidate')
 		})
 		
 		this.addEventListener('icegatheringstatechange', event => {
 			if (event.target.iceGatheringState === 'complete') {
 				this.emit('icecomplete', event)
+				this.emit('log', 'ice gathering complete')
 			}
 		})
 		
 		this.addEventListener('track', event => { 
 			this.emit('track', event)
 		})
+	
+		this.emit('log', 'created peer')
 	}
 
     AddIceCandidate ( candidates ) {
 		if (!candidates) {
-			Debug.code('addIceCandidate', 'no candidate(s) provided')
+			this.emit('error', 'addIceCandidate', 'no candidate(s) provided')
 			throw 'no candidate(s) provided'
 		}
 
@@ -59,16 +65,20 @@ export default class extends RTCPeerConnection {
                 this.addIceCandidate(new RTCIceCandidate(candidate))
         else 
 			this.addIceCandidate(new RTCIceCandidate(candidates))
+
+		this.emit('log', 'added ice candidate(s)')
     }
 
 	AddTrack ( track, streams = [] ) {
 		if (!candidates) {
-			Debug.code('addTrack', 'no track provided')
+			this.emit('error', 'addTrack', 'no track provided')
 			throw 'no track provided'
 		}
 
 		if (!Array.isArray(streams)) streams = [streams]
 		this.peerConnection.addTrack(track, ...streams)
+
+		this.emit('log', 'added track(s)')
 	}
 	
 	CreateDataChannel () {
@@ -76,7 +86,7 @@ export default class extends RTCPeerConnection {
 
 		const send = async ( data ) => {
 			if (!data) {
-				Debug.code('send', 'no data provided')
+				this.emit('error', 'send', 'no data provided')
 				throw 'no data provided'
 			}
 	
@@ -93,6 +103,8 @@ export default class extends RTCPeerConnection {
 			DataChannel, send
 		})
 
+		this.emit('log', 'created data channel')
+
 		return {
 			DataChannel, send
 		}
@@ -102,12 +114,16 @@ export default class extends RTCPeerConnection {
         this.setLocalDescription(
 			new RTCSessionDescription(offer)
 		)
+
+		this.emit('log', 'set local description')
 	}
 
     SetRemoteDescription ( offer ) {
         this.setRemoteDescription(
 			new RTCSessionDescription(offer)
 		)
+
+		this.emit('log', 'set remote description')
 	}
 
 	Broadcast (data) {

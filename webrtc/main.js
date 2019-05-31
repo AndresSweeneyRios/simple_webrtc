@@ -2,32 +2,41 @@ import Emitter from '../util/emitter.js'
 import Debug from '../util/debug.js'
 import PeerConnection from './peerconnection.js'
 
-const Config = (extension = {}) => (
-	Object.assign({
-		json: true,
-		RTCPeerConnection: {
-			json: true
-		} 
-	}, extension)
-)
-
 export default class extends Emitter {
 	config
 	peerConnection
 	dataChannel
 
-	constructor ( extension ) {
+	config = {
+		log: false,
+		RTCPeerConnection: {
+			json: true
+		} 
+	}
+
+	constructor ( options ) {
 		super()
 
-		this.config = Config( extension )
+		Object.assign(this.config, options)
 
-		this.on('error', Debug.error)
+		if (this.config.debug) {
+			this.on('error', (code,message) => {
+				if (message) Debug.code(code,message)
+				else Debug.error(code)
+			})
+
+			if (this.config.log) this.on('log', (message) => {
+				Debug.log(message)
+			})
+		}
 
 		this.peerConnection = new PeerConnection(this.config.RTCPeerConnection, this)
 		this.peerConnection.CreateDataChannel()
+
+		this.datachannels = this.peerConnection.datachannels
 	}
 
-    async offer () {
+    async offer ( ) {
         return await new Promise ( (resolve, reject) => {
 			this.peerConnection.createOffer(
 				async offer => {
@@ -41,20 +50,20 @@ export default class extends Emitter {
 					})
 				},
 
-				reject
+				error => this.emit('error', 'offer', error)
 			)
 		})
     }
 
-    async answer ({ offer, candidates }) {
+    async answer ({ offer, candidates } = { })  {
 		if (!offer) {
-			reject('no offer provided')
-			return Debug.code('answer', 'no offer provided')
+			this.emit('error', 'answer', 'no offer provided')
+			throw 'no offer provided'
 		}
 
-		this.peerConnection.setRemoteDescription(offer)
+		this.peerConnection.SetRemoteDescription(offer)
 		
-		return await new Promise( (resolve, reject) => 
+		return await new Promise( resolve => 
 			this.peerConnection.createAnswer( 
 				async answer => {
 					this.peerConnection.SetLocalDescription(answer)
@@ -69,22 +78,24 @@ export default class extends Emitter {
 					this.peerConnection.AddIceCandidate(candidates)
 				},
 
-				reject
+				error => this.emit('error', 'answer', error)
 			)
 		)
 	}
 	
-	async establish ({ answer, candidates }) {
+	async open ({ answer, candidates }) {
 		if (!answer) {
-			Debug.code('answer', 'no offer provided')
-			throw 'no offer provided'
+			this.emit('error', 'open', 'no answer provided')
+			throw 'no answer provided'
 		}
 
 		this.peerConnection.SetRemoteDescription(answer)
 
 		this.peerConnection.AddIceCandidate(candidates)
 
-		return 
+		await this.on('open')
+
+		return
 	}
 
 	broadcast ( data ) {

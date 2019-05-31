@@ -8,16 +8,17 @@ export default class {
         this.events[event] = this.events[event] || []
 		if (typeof callback !== 'function') Debug.error(`Callback isn't a function,`)
 		
-        return new Promise(resolve => this.events[event].push( data => {
-			callback(data)
-			resolve(data)
+        return new Promise(resolve => this.events[event].push( function () {
+			callback(...arguments)
+			resolve(...arguments)
 		}))
     }
 
-    emit ( event, data = {}, spread = false ) {
+    emit ( event, data ) {
         if (typeof event !== 'string') Debug.error(`Must provide an event string.`)
-        if (!this.events[event]) return false
-        if (spread) for (const i of this.events[event]) i(...data)
-        else for (const i of this.events[event]) i(data)
+		if (!this.events[event]) return false
+        for (const i of this.events[event]) i(
+			...Array.from(arguments).splice(1,arguments.length)
+		)
     }
 }

@@ -1,43 +1,39 @@
 import { debug } from '../config.js'
 
-const parseMessage = (type, message, object, nameStyles = '', messageStyles = '') => {
+const parseMessage = (type, message, p1, p2, nameStyles = '') => {
     for (const i of Object.keys(debug.name.style)) 
         nameStyles += `${i}: ${debug.name.style[i]}; `
-
-    for (const i of Object.keys(debug.message.style)) 
-        messageStyles += `${i}: ${debug.message.style[i]}; `
     
-    console[type](`%c${debug.name.string} %c${message}${ 
-		typeof object === 'object' ? '\n\n%o' : ''
-	}`, nameStyles, messageStyles, object || '')
+    console[type](`%c${debug.name.string} %c${message}`, nameStyles, p1 || '', p2 || '' )
 }
 
 export default {
-    log (message, object) {
-		parseMessage('log', message, object) 
+    log (message) {
+		parseMessage('log', message) 
 	},
 
-	error (message, object) {
-		parseMessage('error', message, object)
+	error (message) {
+		parseMessage('error', message)
 	},
 	
-	dir (message, object)  {
-		parseMessage('dir', message, object)
+	dir (message)  {
+		parseMessage('dir', message)
 	},
 
-	warn (message, object) {
-		parseMessage('warn', message, object)
+	warn (message) {
+		parseMessage('warn', message)
 	},
 
 	code (code, message) {
 		parseMessage(
 			'error', 
-			`%c${code}%c${message}`, 
-			'padding: 5px; background-color: rgb(40,40,40); color: white;'
+			`${code}${typeof message === 'object' ? '' : '%c', ''}`, 
+			'padding: 3px 7px; background-color: rgb(40,40,40); color: white;',
+			typeof message === 'object' ? message : ''
 		)
 	},
 
-	table (message, object) {
-		parseMessage('table', message, object)
+	table (message) {
+		parseMessage('table', message)
 	}
 }

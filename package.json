@@ -9,7 +9,7 @@
 		"url": "https://poisonapple.dev"
 	},
 	"scripts": {
-		"test": "nodemon test/serve.js"
+		"example": "nodemon example/serve.js"
 	},
 	"license": "MIT",
 	"repository": "",
