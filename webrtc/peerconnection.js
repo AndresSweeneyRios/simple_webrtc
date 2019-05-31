@@ -85,10 +85,7 @@ export default class extends RTCPeerConnection {
 		const DataChannel = this.createDataChannel( "main", { reliable: true } )
 
 		const send = async ( data ) => {
-			if (!data) {
-				this.emit('error', 'send', 'no data provided')
-				throw 'no data provided'
-			}
+			if (!data) throw 'no data provided'
 	
 			DataChannel.send(
 				this.config.json

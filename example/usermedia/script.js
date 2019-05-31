@@ -7,7 +7,7 @@ const connect = async ( ) => {
 	try {
 		const offer = await local.offer()
 		const answer = await remote.answer(offer)
-	
+
 		local.open(answer)
 	} catch (error) {
 		console.log('Something went wrong.', error)
