@@ -2,15 +2,25 @@
 	"name": "@andrewrivers/simple_webrtc",
 	"description": "A light wrapper for WebRTC communication.",
 	"main": "index.js",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"author": {
 		"name": "Andres Sweeney-Rios",
 		"email": "andrewarivers@gmail.com",
 		"url": "https://poisonapple.dev"
 	},
+	"scripts": {
+		"test": "nodemon test/serve.js"
+	},
 	"license": "MIT",
 	"repository": "",
 	"keywords": [
 		"webrtc"
-	]
+	],
+	"dependencies": {
+		"esm": "^3.2.25"
+	},
+	"devDependencies": {
+		"express": "^4.17.1",
+		"nodemon": "^1.19.1"
+	}
 }

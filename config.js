@@ -1,4 +1,4 @@
-const debug = {
+export const debug = {
     name: {
         string: '[Simple WebRTC]',
 
@@ -13,10 +13,4 @@ const debug = {
             color: '#fff'
         }
     },
-
-    active: true
-}
-
-module.exports = {
-	debug
 }

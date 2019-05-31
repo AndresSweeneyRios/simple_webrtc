@@ -1,4 +1,4 @@
-const { debug } = require('./config.js')
+import { debug } from './config.js'
 
 const parseMessage = (type, message, object, nameStyles = '', messageStyles = '') => {
     for (const i of Object.keys(debug.name.style)) 
@@ -7,14 +7,37 @@ const parseMessage = (type, message, object, nameStyles = '', messageStyles = ''
     for (const i of Object.keys(debug.message.style)) 
         messageStyles += `${i}: ${debug.message.style[i]}; `
     
-    if (debug.active) console[type](`%c${debug.name.string} %c${message}${ object ? '\n\n%o' : ''}`, nameStyles, messageStyles, object || '')
+    console[type](`%c${debug.name.string} %c${message}${ 
+		typeof object === 'object' ? '\n\n%o' : ''
+	}`, nameStyles, messageStyles, object || '')
 }
 
-const log = (message, object) => parseMessage('log', message, object)
-const error =  (message, object) => parseMessage('error', message, object)
-const dir =  (message, object) => parseMessage('dir', message, object)
-const warn =  (message, object) => parseMessage('warn', message, object)
+export default {
+    log (message, object) {
+		parseMessage('log', message, object) 
+	},
 
-module.exports = {
-    log, error, dir, warn
+	error (message, object) {
+		parseMessage('error', message, object)
+	},
+	
+	dir (message, object)  {
+		parseMessage('dir', message, object)
+	},
+
+	warn (message, object) {
+		parseMessage('warn', message, object)
+	},
+
+	code (code, message) {
+		parseMessage(
+			'error', 
+			`%c${code}%c${message}`, 
+			'padding: 5px; background-color: rgb(40,40,40); color: white;'
+		)
+	},
+
+	table (message, object) {
+		parseMessage('table', message, object)
+	}
 }
