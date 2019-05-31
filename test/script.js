@@ -1,15 +1,21 @@
-import SimpleWebRTC from './webrtc.js'
+import SimpleWebRTC from './webrtc/main.js'
 
 const local = new SimpleWebRTC()
 const remote = new SimpleWebRTC()
 
 const init = async () => {
+
 	const offer = await local.offer()
-	const answer = await remote.answer(offer)
+	const answer = await remote.answer( offer )
 
-	console.log(offer.candidates, answer.candidates)
+	await local.establish( answer )
+	
+	local.on('open', () => local.broadcast({
+		message: 'test'
+	}))
 
-	await local.establish(answer)
+	remote.on('message', message => console.log(message))
+
 }
 
 init()

@@ -1,4 +1,4 @@
-import { debug } from './config.js'
+import { debug } from '../config.js'
 
 const parseMessage = (type, message, object, nameStyles = '', messageStyles = '') => {
     for (const i of Object.keys(debug.name.style)) 

@@ -1,2 +1,2 @@
 require = require("esm")(module)
-module.exports = require('./webrtc')
+module.exports = require('./webrtc/main')
