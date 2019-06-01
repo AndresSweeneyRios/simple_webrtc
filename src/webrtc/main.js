@@ -9,7 +9,7 @@ export default class extends Emitter {
 
 	config = {
 		log: false,
-		RTCPeerConnection: {
+		peer: {
 			json: true
 		} 
 	}
@@ -38,7 +38,7 @@ export default class extends Emitter {
 
 		// create new PeerConnection
 
-		this.peerConnection = new PeerConnection(this.config.RTCPeerConnection, this)
+		this.peerConnection = new PeerConnection(this.config.peer, this)
 		this.peerConnection.CreateDataChannel()
 
 		this.datachannels = this.peerConnection.datachannels
