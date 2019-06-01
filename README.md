@@ -97,23 +97,34 @@ Peer.on('open', () => {
 
 * `message` data has been received, either by `Peer.broadcast()` or `DataChannel.send()`
 ```ts
-Peer.on('message', ( data ) => {
+Peer.on('message', ( data: any ) => {
     /* if config.json is true, data will be parsed already */
 })
 ```
 <br>
 
 
+* `icecandidate` ICE candidate has been found, handled internally and can be ignored
+```ts
+Peer.on('icecandidate', ( candidate: RTCIceCandidate ) => ... )
+```
+<br>
+
+
+* `track` track has been added via `media` [[MDN]](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack)<br>
+<br>
+
+
 * `error` handled by `config.debug`
 ```ts
-Peer.on('error', ( string method, string message ) => ... )
+Peer.on('error', ( method: string, message: string ) => ... )
 ```
 <br>
 
 
 * `log` handled by `config.log`
 ```ts
-Peer.on('log', ( string message ) => ... )
+Peer.on('log', ( message: string ) => ... )
 ```
 <br>
 
