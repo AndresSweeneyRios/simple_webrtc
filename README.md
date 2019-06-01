@@ -43,32 +43,32 @@ const local = Peer()
 const remote = Peer()
 
 const connect = async ( ) => {
-	try {
+    try {
         // create `offer`
-		const offer = await local.offer()
+        const offer = await local.offer()
         
-		// send `offer` to remote peer
-		const answer = await remote.answer(offer)
-	
-		// retrieve `answer` from remote peer
-		local.open(answer)
-	
-		// events are all asynchronous
-		await local.on('open')
-		console.log('Opened!')
-	} catch (error) {
-		console.log('Something went wrong.', error)
-	}
+        // send `offer` to remote peer
+        const answer = await remote.answer(offer)
+
+        // retrieve `answer` from remote peer
+        local.open(answer)
+
+        // events are all asynchronous
+        await local.on('open')
+        console.log('Opened!')
+    } catch (error) {
+        console.log('Something went wrong.', error)
+    }
 }
 
 // a connection has been established
 local.on( 'open', () => {
-	local.broadcast({ message: 'Hello World!' })
+    local.broadcast({ message: 'Hello World!' })
 })
 
 // data has been received
 remote.on( 'message', ( data ) => {
-	console.log( data ) // { message: 'Hello World!' }
+    console.log( data ) // { message: 'Hello World!' }
 })
 
 connect()
