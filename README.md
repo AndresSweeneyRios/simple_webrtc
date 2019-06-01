@@ -206,7 +206,3 @@ Peer.on('error', ( method: string, message: string ) => ... )
 Peer.on('log', ( message: string ) => ... )
 ```
 <br>
-
-
-<br><br>
-
