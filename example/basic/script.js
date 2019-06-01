@@ -6,7 +6,6 @@ const remote = new SimpleWebRTC({ debug: true })
 
 const connect = async ( ) => {
 	try {
-
 		const offer = await local.offer()
 	
 		// send `offer` to remote peer
@@ -18,26 +17,19 @@ const connect = async ( ) => {
 		// events are all asynchronous
 		await local.on('open')
 		console.log('Opened!')
-
 	} catch (error) {
-
 		console.log('Something went wrong.', error)
-
 	}
 }
 
 // a connection has been established
 local.on( 'open', ( ) => {
-
 	local.broadcast({ message: 'Hello World!' })
-
 })
 
 // data has been received
 remote.on( 'message', ( data ) => {
-
 	console.log( data ) // { message: 'Hello World!' }
-
 })
 
 connect()
