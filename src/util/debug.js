@@ -1,11 +1,15 @@
 import { debug } from '../config.js'
 
+
+// adds default styles to messages before logging
+
 const parseMessage = (type, message, p1, p2, nameStyles = '') => {
     for (const i of Object.keys(debug.name.style)) 
         nameStyles += `${i}: ${debug.name.style[i]}; `
     
     console[type](`%c${debug.name.string} %c${message}`, nameStyles, p1 || '', p2 || '' )
 }
+
 
 export default new class {
     log (message) {
@@ -23,6 +27,9 @@ export default new class {
 	warn (message) {
 		parseMessage('warn', message)
 	}
+
+
+	// special styles to indicate a specific method being used
 
 	code (code, message) {
 		parseMessage(

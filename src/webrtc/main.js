@@ -130,8 +130,6 @@ export default class extends Emitter {
 	}
 
 
-	// sends to all datachannels
-
 	broadcast ( data ) {
 		this.peerConnection.Broadcast(data)
 	}

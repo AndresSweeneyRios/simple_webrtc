@@ -10,11 +10,18 @@ export default class extends RTCPeerConnection {
 		})
 
 		this.addEventListener('datachannel', event => {
+
+			// invoked when a connection has been established
+			// at this point it is safe to communicate
+
 			event.channel.onopen = () => {
 				this.emit('open')
 				this.emit('log', 'datachannel open')
 			}
 			
+
+			// the receiving event for the `DataChannel.send` method
+
 			event.channel.onmessage = message => this.emit(
 				'message', 
 				
@@ -40,6 +47,10 @@ export default class extends RTCPeerConnection {
 			this.emit('log', 'found ice candidate')
 		})
 		
+
+		// once this event is emitted, the offer/answer methods will resolve
+		// this allows offers/answers to be transceived in one string (per peer)
+		
 		this.addEventListener('icegatheringstatechange', event => {
 			if (event.target.iceGatheringState === 'complete') {
 				this.emit('icecomplete', event)
@@ -47,12 +58,19 @@ export default class extends RTCPeerConnection {
 			}
 		})
 		
+
+		// receiving event for added media tracks
+
 		this.addEventListener('track', event => { 
 			this.emit('track', event)
 		})
 	
 		this.emit('log', 'created peer')
 	}
+
+
+	// invoked by the `answer` and `open` methods
+	// bulk/individually add ice candidates
 
     AddIceCandidate ( candidates ) {
 		try {
@@ -70,6 +88,10 @@ export default class extends RTCPeerConnection {
 		}
     }
 
+
+	// add a media track (video, audio, canvas)
+	// it is also used by the UserMedia class
+
 	AddTrack ( track, streams = [] ) {
 		try {
 			if (!track) throw 'no track provided'
@@ -83,6 +105,10 @@ export default class extends RTCPeerConnection {
 		}
 	}
 	
+
+	// DataChannel creation, contains the `send` method
+	// automatically stringifies content unless configured otherwise
+
 	CreateDataChannel () {
 		try {
 			const DataChannel = this.createDataChannel( "main", { reliable: true } )
@@ -113,6 +139,9 @@ export default class extends RTCPeerConnection {
 		}
 	}
 
+
+	// local/remote descriptions take an offer/answer object
+
     SetLocalDescription ( offer ) {
         this.setLocalDescription(
 			new RTCSessionDescription(offer)
@@ -128,6 +157,7 @@ export default class extends RTCPeerConnection {
 
 		this.emit('log', 'set remote description')
 	}
+
 
 	Broadcast (data) {
 		for (const { send } of this.datachannels)

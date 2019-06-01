@@ -3,6 +3,8 @@ import Debug from './debug.js'
 export default class {
 	events = {}
 	
+	// adds function to the designated event
+
     on ( event, callback = () => {} ) {
         if (typeof event !== 'string') Debug.error(`Must provide an event string.`)
         this.events[event] = this.events[event] || []
@@ -14,7 +16,11 @@ export default class {
 		}))
     }
 
-    emit ( event, data ) {
+
+	// iterates on event's functions defined with `on`
+	// spreads all arguments except `event` into the function's parameters
+
+    emit ( event ) {
         if (typeof event !== 'string') Debug.error(`Must provide an event string.`)
 		if (!this.events[event]) return false
         for (const i of this.events[event]) i(
