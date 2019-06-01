@@ -75,6 +75,85 @@ connect()
 ```
 <br>
 
+## methods
+
+
+### main
+
+* `offer` creates an offer, this is the first step in establishing a connection
+```ts
+const offer: string = await Peer.offer()
+```
+<br>
+
+* `answer` creates an answer with `offer`, second step
+```ts
+const answer: string = await Peer.answer(offer)
+```
+<br>
+
+* `open` establishes a connection with `answer`
+```ts
+await Peer.answer(answer)
+```
+<br>
+
+* `broadcast` sends data to all peers
+```ts
+const data: any = { message: 'Hello World!' }
+Peer.broadcast(data)
+```
+<br>
+
+
+### media
+
+The UserMedia class supports callbacks as well as asynchronous functions. Each has an `allow` and `block` parameter, which are invoked depending on a user's prompt result. [[MDN]](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia) 
+
+```ts
+Peer.media.microphone( 
+    ( stream: MediaStream ) => ... , // allow
+    ( ) => ... // block
+)
+```
+<br>
+
+
+* `media.microphone` adds the user's microphone's audio to PeerConnection and returns its MediaStream, if unavailable or blocked returns `null`
+```ts
+const stream: MediaStream | void = await Peer.media.microphone()
+```
+<br>
+
+
+* `media.camera` adds the user's cameras's audio to PeerConnection and returns its MediaStream, if unavailable or blocked returns `null`
+```ts
+const stream: MediaStream | void = await Peer.media.camera()
+```
+<br>
+
+
+* `media.screen` prompts the user for a display/window/tab (with audio when available) and adds the user's choice to PeerConnection and returns its MediaStream, if unavailable or blocked returns `null`
+```ts
+const stream: MediaStream | void = await Peer.media.microphone()
+```
+<br>
+
+* `media.custom` uses custom constraints [[MDN]](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to add the resulting MediaStream to PeerConnection and returns its MediaStream, if unavailable or blocked returns `null`
+
+```ts
+const stream: MediaStream | void = await Peer.media.custom({
+   video: true,  // default `false`
+   audio: false, // default `false`
+   screen: false // default `false`
+})
+```
+callback syntax for `media.custom`:
+```ts
+Peer.media.custom( constraints, allow, block )
+```
+<br>
+
 
 ## events
 
@@ -130,5 +209,4 @@ Peer.on('log', ( message: string ) => ... )
 
 
 <br><br>
-
 
