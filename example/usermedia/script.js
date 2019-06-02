@@ -9,14 +9,12 @@ const connect = async ( ) => {
 		const answer = await remote.answer(offer)
 
 		local.open(answer)
+
+		console.dir(await local.media.screen())
 	} catch (error) {
 		console.log('Something went wrong.', error)
 	}
 }
-
-local.on( 'open', ( ) => {
-	local.broadcast({ message: 'Hello World!' })
-})
 
 remote.on( 'message', ( data ) => {
 	console.log( data ) // { message: 'Hello World!' }

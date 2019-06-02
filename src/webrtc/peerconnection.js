@@ -5,9 +5,9 @@ export default class extends RTCPeerConnection {
 	constructor ( config, {events, emit} ) {
 		super()
 
-		this.events = events
-		this.config = config
-		this.emit = emit
+		Object.assign( this, { 
+			config, events, emit 
+		})
 
 		this.addEventListener('datachannel', event => {
 			event.channel.onopen = () => {
@@ -23,11 +23,11 @@ export default class extends RTCPeerConnection {
 					: message.data
 			)
 	
-			event.channel.onerror = error => this.emit('error', 'DataChannel', error)
+			event.channel.onerror = error => this.emit('error', 'PeerConnection.DataChannel', error)
 		})
 		
 		this.addEventListener('error', event => {
-			this.emit('error', 'RTCPeerConnection', event)
+			this.emit('error', 'PeerConnection', event)
 		})
 		
 		this.addEventListener('icecandidate', event => {
@@ -55,55 +55,61 @@ export default class extends RTCPeerConnection {
 	}
 
     AddIceCandidate ( candidates ) {
-		if (!candidates) {
-			this.emit('error', 'addIceCandidate', 'no candidate(s) provided')
-			throw 'no candidate(s) provided'
+		try {
+			if (!candidates) throw 'no candidate(s) provided'
+
+			if (Array.isArray(candidates)) 
+				for (const candidate of candidates) 
+					this.addIceCandidate(new RTCIceCandidate(candidate))
+			else 
+				this.addIceCandidate(new RTCIceCandidate(candidates))
+
+			this.emit('log', 'added ice candidate(s)')
+		} catch (error) {
+			this.emit('error', 'PeerConnection.addIceCandidate', 'no candidate(s) provided')
 		}
-
-        if (Array.isArray(candidates)) 
-            for (const candidate of candidates) 
-                this.addIceCandidate(new RTCIceCandidate(candidate))
-        else 
-			this.addIceCandidate(new RTCIceCandidate(candidates))
-
-		this.emit('log', 'added ice candidate(s)')
     }
 
 	AddTrack ( track, streams = [] ) {
-		if (!candidates) {
-			this.emit('error', 'addTrack', 'no track provided')
-			throw 'no track provided'
+		try {
+			if (!track) throw 'no track provided'
+
+			if (!Array.isArray(streams)) streams = [streams]
+			this.addTrack(track, ...streams)
+
+			this.emit('log', 'added track(s)')
+		} catch (error) {
+			this.emit('error', 'PeerConnection.addTrack', error)
 		}
-
-		if (!Array.isArray(streams)) streams = [streams]
-		this.peerConnection.addTrack(track, ...streams)
-
-		this.emit('log', 'added track(s)')
 	}
 	
 	CreateDataChannel () {
-		const DataChannel = this.createDataChannel( "main", { reliable: true } )
+		try {
+			const DataChannel = this.createDataChannel( "main", { reliable: true } )
 
-		const send = async ( data ) => {
-			if (!data) throw 'no data provided'
-	
-			DataChannel.send(
-				this.config.json
-					? JSON.stringify(data)
-					: data
-			)
-	
-			return
-		}
+			const send = async ( data ) => {
+				if (!data) throw 'no data provided'
+		
+				DataChannel.send(
+					this.config.json
+						? JSON.stringify(data)
+						: data
+				)
+		
+				return
+			}
 
-		this.datachannels.push({
-			DataChannel, send
-		})
+			this.datachannels.push({
+				DataChannel, send
+			})
 
-		this.emit('log', 'created data channel')
+			this.emit('log', 'created data channel')
 
-		return {
-			DataChannel, send
+			return {
+				DataChannel, send
+			}
+		} catch (error) {
+			this.emit('error', 'PeerConnection.CreateDataChannel', error)
 		}
 	}
 
