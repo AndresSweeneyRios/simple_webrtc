@@ -10,7 +10,7 @@
 	},
 	"scripts": {
 		"example": "nodemon example/serve.js",
-		"dist": "babel src -d dist"
+		"dist": "babel src -d dist/browser"
 	},
 	"license": "MIT",
 	"repository": "",
