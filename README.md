@@ -19,7 +19,7 @@ npm i --save @andrewrivers/simple_webrtc
 
 
 ## installation (es6)
-Import `dist/browser/webrtc/main.js`. Standalone version not yet available<br>
+Import `dist/browser/webrtc/main.js`. Standalone version not yet available.<br>
 <br>
 
 

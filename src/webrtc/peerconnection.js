@@ -61,11 +61,17 @@ export default class extends RTCPeerConnection {
 
 		// receiving event for added media tracks
 
-		this.addEventListener('track', event => { 
+		this.ontrack = event => { 
 			this.emit('track', event)
-		})
+		}
 	
 		this.emit('log', 'created peer')
+
+		
+		this.addEventListener('negotiationneeded', event => {
+			this.emit('negotiationneeded', event)
+			this.emit('log', 'negotiation needed')
+		})
 	}
 
 

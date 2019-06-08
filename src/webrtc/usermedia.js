@@ -1,7 +1,7 @@
 export default class {
-	constructor ({ events, emit, peerConnection }) {
+	constructor ({ events, emit }) {
 		Object.assign( this, { 
-			events, emit, peerConnection
+			events, emit
 		})
 	}
 
@@ -15,15 +15,10 @@ export default class {
 				if (typeof allow === 'function') allow(media)
 				else throw '`allow` is not of type `function`'
 
-			this.peerConnection.AddTrack(
-				(
-					media.getVideoTracks().length > 0 
-						? media.getVideoTracks()[0] : 
-					media.getAudioTracks().length > 0
-						? media.getAudioTracks()[0] : 
-					null
-				), media
-			)
+			for (const track of media.getTracks())
+				this.emit('addtrack', track)
+
+			await this.on('media-open')
 
 			return media
 		} catch (error) {

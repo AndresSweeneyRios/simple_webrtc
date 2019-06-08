@@ -1,4 +1,4 @@
-import SimpleWebRTC from '../scripts/webrtc/main.js'
+import SimpleWebRTC from '../scripts/webrtc/webrtc.js'
 
 // in production these two peers would be on different machines
 const local = new SimpleWebRTC({ debug: true })
