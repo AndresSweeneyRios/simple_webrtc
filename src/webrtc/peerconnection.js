@@ -2,11 +2,11 @@ export default class extends RTCPeerConnection {
 	candidates = []
 	datachannels = []
 
-	constructor ( config, {events, emit} ) {
+	constructor ( config, { emit, on }) {
 		super()
 
 		Object.assign( this, { 
-			config, events, emit 
+			config, emit, on
 		})
 
 		this.addEventListener('datachannel', event => {
@@ -22,29 +22,65 @@ export default class extends RTCPeerConnection {
 
 			// the receiving event for the `DataChannel.send` method
 
-			event.channel.onmessage = message => this.emit(
-				'message', 
-				
-				this.config.json 
-					? JSON.parse(message.data)
-					: message.data
-			)
-	
+			event.channel.onmessage = async message => {
+				try {
+					const data = JSON.parse(message.data)
+
+					if (data.renegotiation) {
+						this.emit('log', 'renegotiation')
+
+						this.SetRemoteDescription(data.sdp)
+
+						if (data.type === 'offer') {
+							emit('log', 'sending renegotiation answer')
+
+							const answer = await this.createAnswer()
+							await this.SetLocalDescription(answer)
+					
+							this.datachannels[0].send(
+								JSON.stringify({
+									type: 'answer',
+									renegotiation: true,
+									sdp: this.localDescription
+								}), 
+					
+								false
+							)
+						}
+
+						else emit('log', 'received renegotiation answer')
+
+						return 
+					}
+
+					if (data.type === 'icecandidate') {
+						this.emit('log', 'received ice candidate')
+						return this.AddIceCandidate(data.candidate)
+					}
+				} catch {}
+
+				this.emit(
+					'message', 
+					
+					this.config.json 
+						? JSON.parse(message.data)
+						: message.data
+				)
+			}
+
 			event.channel.onerror = error => this.emit('error', 'PeerConnection.DataChannel', error)
 		})
-		
+
 		this.addEventListener('error', event => {
 			this.emit('error', 'PeerConnection', event)
 		})
 		
 		this.addEventListener('icecandidate', event => {
-			this.emit('icecandidate', event.candidate)
-	
 			if (event.candidate) {
+				this.emit('icecandidate', event.candidate)
 				this.candidates.push(event.candidate)
+				this.emit('log', 'found ice candidate')
 			}
-
-			this.emit('log', 'found ice candidate')
 		})
 		
 
@@ -71,6 +107,10 @@ export default class extends RTCPeerConnection {
 		this.addEventListener('negotiationneeded', event => {
 			this.emit('negotiationneeded', event)
 			this.emit('log', 'negotiation needed')
+		})
+
+		this.on('addtrack', ({ track, streams }) => {
+			this.AddTrack(track, ...streams)
 		})
 	}
 
@@ -119,11 +159,11 @@ export default class extends RTCPeerConnection {
 		try {
 			const DataChannel = this.createDataChannel( "main", { reliable: true } )
 
-			const send = async ( data ) => {
+			const send = async ( data, json = undefined ) => {
 				if (!data) throw 'no data provided'
-		
+
 				DataChannel.send(
-					this.config.json
+					( json !== undefined ? json : this.config.json )
 						? JSON.stringify(data)
 						: data
 				)
@@ -148,22 +188,25 @@ export default class extends RTCPeerConnection {
 
 	// local/remote descriptions take an offer/answer object
 
-    SetLocalDescription ( offer ) {
-        this.setLocalDescription(
+    async SetLocalDescription ( offer ) {
+        await this.setLocalDescription(
 			new RTCSessionDescription(offer)
 		)
 
 		this.emit('log', 'set local description')
+
+		return
 	}
 
-    SetRemoteDescription ( offer ) {
-        this.setRemoteDescription(
+    async SetRemoteDescription ( offer ) {
+        await this.setRemoteDescription(
 			new RTCSessionDescription(offer)
 		)
 
 		this.emit('log', 'set remote description')
-	}
 
+		return
+	}
 
 	Broadcast (data) {
 		for (const { send } of this.datachannels)

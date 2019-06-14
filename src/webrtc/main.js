@@ -8,6 +8,7 @@ export default class extends Emitter {
 
 	config = {
 		log: false,
+		debug: false,
 		peer: {
 			json: true
 		} 
@@ -19,7 +20,6 @@ export default class extends Emitter {
 		// assign user options to default config
 
 		Object.assign(this.config, options)
-
 		
 		// enable debugging features
 

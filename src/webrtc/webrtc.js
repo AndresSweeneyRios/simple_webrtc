@@ -1,13 +1,13 @@
-import Emitter from '../util/emitter.js'
 import PeerConnection from './peerconnection.js'
+import Emitter from '../util/emitter.js';
 
 export default class extends Emitter {
 	peerConnection
 	dataChannel
+	icecomplete = false
 
-	constructor ({ config }) {
+	constructor ({ config, emit, on }) {
 		super()
-
 
 		// create new PeerConnection
 
@@ -15,6 +15,45 @@ export default class extends Emitter {
 		this.peerConnection.CreateDataChannel()
 
 		this.datachannels = this.peerConnection.datachannels
+		
+		this.on('offer', async offer => {
+			this.send(await this.answer(offer), false)
+		})
+
+		this.on('icecomplete', () => {
+			this.icecomplete = true
+		})
+
+		on('media-negotiation', async () => {
+			this.renegotiate()
+		})
+
+		on('addtrack', track => 
+			this.emit('addtrack', track)
+		)
+
+		this.on('negotiationneeded', () =>
+			emit('negotiationneeded')
+		)
+
+		this.on('log', message => {
+			emit('log', message)
+		})
+
+		this.on('error', (code, message) => {
+			emit('error', code, message)
+		})
+
+		;(async () => {
+			await this.on('open')
+
+			this.on('icecandidate', candidate => {
+				if (candidate) this.send({
+					candidate,
+					type: 'icecandidate'
+				}, true)
+			})
+		})()
 	}
 
 
@@ -27,12 +66,13 @@ export default class extends Emitter {
 					async offer => {
 						this.peerConnection.SetLocalDescription(offer)
 
-						await this.on('icecomplete')
+						if (!this.icecomplete) await this.on('icecomplete')
 						
 						resolve(
 							JSON.stringify({
 								offer,
-								candidates: this.peerConnection.candidates
+								candidates: this.peerConnection.candidates,
+								type: 'offer'
 							})
 						)
 					},
@@ -52,7 +92,10 @@ export default class extends Emitter {
 		try {
 			if (!offerObject) throw 'no offer provided'
 
-			const { offer, candidates } = JSON.parse(offerObject)
+			if (typeof offerObject === 'string') 
+				offerObject = JSON.parse(offerObject)
+
+			const { offer, candidates } = offerObject
 
 			this.peerConnection.SetRemoteDescription(offer)
 			
@@ -60,13 +103,14 @@ export default class extends Emitter {
 				this.peerConnection.createAnswer( 
 					async answer => {
 						this.peerConnection.SetLocalDescription(answer)
-						
-						await this.on('icecomplete')
-						
+
+						if (!this.icecomplete) await this.on('icecomplete')
+
 						resolve(
 							JSON.stringify({
 								answer: answer,
-								candidates: this.peerConnection.candidates
+								candidates: this.peerConnection.candidates,
+								type: 'answer'
 							})
 						)
 
@@ -81,6 +125,23 @@ export default class extends Emitter {
 		}
 	}
 	
+	async renegotiate ( ) {
+		this.emit('log', 'renegotiating')
+	
+		const { offer } = JSON.parse(await this.offer())
+		await this.peerConnection.SetLocalDescription(offer)
+
+		this.send(
+			JSON.stringify({
+				type: 'offer',
+				renegotiation: true,
+				sdp: this.peerConnection.localDescription
+			}), 
+
+			false
+		)
+	}
+
 
 	// establish connection with answer object
 
@@ -88,7 +149,10 @@ export default class extends Emitter {
 		try {
 			if (!answerObject) throw 'no answer provided'
 
-			const { answer, candidates } = JSON.parse(answerObject)
+			if (typeof answerObject === 'string') 
+				answerObject = JSON.parse(answerObject)
+
+			const { answer, candidates } = answerObject
 
 			this.peerConnection.SetRemoteDescription(answer)
 
@@ -103,7 +167,7 @@ export default class extends Emitter {
 	}
 
 
-	send ( data, channel = 0 ) {
-		datachannels[channel].send(data)
+	send ( data, json, channel = 0 ) {
+		this.peerConnection.datachannels[channel].send(data, json)
 	}
 }

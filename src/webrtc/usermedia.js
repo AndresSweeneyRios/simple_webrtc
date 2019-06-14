@@ -1,7 +1,7 @@
 export default class {
-	constructor ({ events, emit }) {
+	constructor ({ emit, on }) {
 		Object.assign( this, { 
-			events, emit
+			emit, on
 		})
 	}
 
@@ -11,14 +11,19 @@ export default class {
 				? await navigator.mediaDevices.getDisplayMedia({ audio, video })
 				: await navigator.mediaDevices.getUserMedia({ audio, video })
 
+			for (const track of media.getTracks()) {
+				this.emit('addtrack', {
+					track,
+					streams: [media]
+				})
+			}
+
+			await this.on('negotiationneeded')
+			this.emit('media-negotiation')
+
 			if (allow) 
 				if (typeof allow === 'function') allow(media)
 				else throw '`allow` is not of type `function`'
-
-			for (const track of media.getTracks())
-				this.emit('addtrack', track)
-
-			await this.on('media-open')
 
 			return media
 		} catch (error) {
