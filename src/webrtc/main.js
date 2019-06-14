@@ -39,9 +39,13 @@ export default class extends Emitter {
 		return this.peers[name] = new WebRTC(this)
 	}
 
-	Broadcast = ( data ) => {
-		for (const peer of this.peers)
-			peer.send(data)
+	get Broadcast ( ) {
+		const { peers } = this
+
+		return ( data ) => {
+			for (const peer of Object.values(peers))
+				peer.send(data)
+		}
 	}
 
 

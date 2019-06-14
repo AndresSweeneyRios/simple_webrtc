@@ -1,13 +1,11 @@
 export default class {
   constructor({
-    events,
     emit,
-    peerConnection
+    on
   }) {
     Object.assign(this, {
-      events,
       emit,
-      peerConnection
+      on
     });
   }
 
@@ -27,8 +25,17 @@ export default class {
         audio,
         video
       });
+
+      for (const track of media.getTracks()) {
+        this.emit('addtrack', {
+          track,
+          streams: [media]
+        });
+      }
+
+      await this.on('negotiationneeded');
+      this.emit('media-negotiation');
       if (allow) if (typeof allow === 'function') allow(media);else throw '`allow` is not of type `function`';
-      this.peerConnection.AddTrack(media.getVideoTracks().length > 0 ? media.getVideoTracks()[0] : media.getAudioTracks().length > 0 ? media.getAudioTracks()[0] : null, media);
       return media;
     } catch (error) {
       if (!error.name || ['NotAllowedError', 'AbortError', 'NotFoundError', 'SecurityError'].indexOf(error.name) < 0) {
