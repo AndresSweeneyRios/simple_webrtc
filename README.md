@@ -205,6 +205,6 @@ peer.on('log', ( message: string ) => ... )
 
 If you have any questions or you're having trouble getting set up, feel free to message me.
 
-[andrewarivers@gmail.com](mailto:andrewarivers@gmail.com)
-[@Andr3wRiv3rs](https://twitter.com/Andr3wRiv3rs)
+[andrewarivers@gmail.com](mailto:andrewarivers@gmail.com)<br>
+[@Andr3wRiv3rs](https://twitter.com/Andr3wRiv3rs)<br>
 PoisonApple#9351
