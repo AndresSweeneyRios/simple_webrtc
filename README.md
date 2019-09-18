@@ -56,7 +56,7 @@ Broadcast("hello world")
 // attach user media to SimpleWebRTC
 const camera: MediaStream | void = Media.camera()
 const microphone: MediaStream | void = Media.microphone()
-const screenshare: MediaStream | void = Media.screenshare()
+const screenshare: MediaStream | void = Media.screen()
 
 // listen for user media
 peer.on('track', ({ streams } : { streams: MediaStream[] }) => {
@@ -126,7 +126,7 @@ const stream: MediaStream | void = await Media.camera()
 
 * `Media.screen` prompts the user for a display/window/tab (with audio when available) and adds the user's choice to SimpleWebRTC and returns its MediaStream, if unavailable or blocked returns `null`
 ```ts
-const stream: MediaStream | void = await Media.microphone()
+const stream: MediaStream | void = await Media.screen()
 ```
 <br>
 
