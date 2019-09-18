@@ -29,27 +29,26 @@ import SimpleWebRTC from './SimpleWebRTC.js'
 
 const { Peer, Broadcast, Media } = new SimpleWebRTC()
 
-const peer: WebRTC = Peer('local')
-const offer: string = await peer.offer()
-const answer: string = await peer.answer( offer )
+const peer = Peer('local')
+const offer = await peer.offer( )
+const answer = await peer.answer( offer )
 
 peer.open(answer)
 
-peer.on('open', () => ...)
-peer.on('message', ( message: object | string | number ) => ...)
-peer.on('error', ( error: Error ) => ...)
-peer.on('close', () => ...)
+peer.on('open', ( ) => ...)
+peer.on('message', ( message ) => ...)
+peer.on('error', ( error ) => ...)
+peer.on('close', ( ) => ...)
 
 peer.send({ abc: "def"})
+
 Broadcast("hello world")
 
-const camera: MediaStream | void = Media.camera()
-const microphone: MediaStream | void = Media.microphone()
-const screenshare: MediaStream | void = Media.screen()
+const camera = Media.camera( )
+const microphone = Media.microphone( )
+const screenshare = Media.screen( )
 
-peer.on('track', ({ streams } : { streams: MediaStream[] }) => {
-    console.log( streams[0] )
-})
+peer.on('track', ({ streams }) => ...)
 
 ```
 <br>
