@@ -25,40 +25,28 @@ Import `dist/browser/webrtc/main.js`. Standalone version not yet available.<br>
 
 ## usage
 ```ts
-import SimpleWebRTC from '../scripts/webrtc/main.js'
+import SimpleWebRTC from './SimpleWebRTC.js'
 
-const { Peer, Broadcast, Media } = new SimpleWebRTC({ 
-	debug: true, // logs errors 
-	log: true // logs events
-})
+const { Peer, Broadcast, Media } = new SimpleWebRTC()
 
 const peer: WebRTC = Peer('local')
-
-// get offer
 const offer: string = await peer.offer()
-
-// get answer
 const answer: string = await peer.answer( offer )
 
-// establish a connection
 peer.open(answer)
 
-// events
 peer.on('open', () => ...)
 peer.on('message', ( message: object | string | number ) => ...)
 peer.on('error', ( error: Error ) => ...)
 peer.on('close', () => ...)
 
-// send
 peer.send({ abc: "def"})
 Broadcast("hello world")
 
-// attach user media to SimpleWebRTC
 const camera: MediaStream | void = Media.camera()
 const microphone: MediaStream | void = Media.microphone()
 const screenshare: MediaStream | void = Media.screen()
 
-// listen for user media
 peer.on('track', ({ streams } : { streams: MediaStream[] }) => {
     console.log( streams[0] )
 })
