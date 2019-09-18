@@ -139,7 +139,7 @@ const stream: MediaStream | void = await Media.custom({
    screen: false // default `false`
 })
 ```
-callback syntax for `media.custom`:
+callback syntax for `Media.custom`:
 ```ts
 Media.custom( constraints, allow, block )
 ```
