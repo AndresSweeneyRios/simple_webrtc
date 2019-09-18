@@ -24,54 +24,45 @@ Import `dist/browser/webrtc/main.js`. Standalone version not yet available.<br>
 
 
 ## usage
-```js
+```ts
 import SimpleWebRTC from '../scripts/webrtc/main.js'
 
-const config = {
-    debug: true, // logs all errors, default `false`
-    log: true, // logs all events, default `false`
-    
-    peer: {
-        json: true // stringifies and parses data automatically, default `true`
-    }
-}
-
-const Peer = () =>  new SimpleWebRTC(config)
-
-// in production these two peers would be on different machines
-const local = Peer()
-const remote = Peer()
-
-const connect = async ( ) => {
-    try {
-        // create `offer`
-        const offer = await local.offer()
-        
-        // send `offer` to remote peer
-        const answer = await remote.answer(offer)
-
-        // retrieve `answer` from remote peer
-        local.open(answer)
-
-        // events are all asynchronous
-        await local.on('open')
-        console.log('Opened!')
-    } catch (error) {
-        console.log('Something went wrong.', error)
-    }
-}
-
-// a connection has been established
-local.on( 'open', () => {
-    local.broadcast({ message: 'Hello World!' })
+const { Peer, Broadcast, Media } = new SimpleWebRTC({ 
+	debug: true, // logs errors 
+	log: true // logs events
 })
 
-// data has been received
-remote.on( 'message', ( data ) => {
-    console.log( data ) // { message: 'Hello World!' }
+const peer: WebRTC = Peer('local')
+
+// get offer
+const offer: string = await peer.offer()
+
+// get answer
+const answer: string = await peer.answer( offer )
+
+// establish a connection
+peer.open(answer)
+
+// events
+peer.on('open', () => ...)
+peer.on('message', ( message: object | string | number ) => ...)
+peer.on('error', ( error: Error ) => ...)
+peer.on('close', () => ...)
+
+// send
+peer.send({ abc: "def"})
+Broadcast("hello world")
+
+// attach user media to SimpleWebRTC
+const camera: MediaStream | void = Media.camera()
+const microphone: MediaStream | void = Media.microphone()
+const screenshare: MediaStream | void = Media.screenshare()
+
+// listen for user media
+peer.on('track', ({ streams } : { streams: MediaStream[] }) => {
+    console.log( streams[0] )
 })
 
-connect()
 ```
 <br>
 
@@ -82,26 +73,26 @@ connect()
 
 * `offer` creates an offer, this is the first step in establishing a connection
 ```ts
-const offer: string = await Peer.offer()
+const offer: string = await peer.offer()
 ```
 <br>
 
 * `answer` creates an answer with `offer`, second step
 ```ts
-const answer: string = await Peer.answer(offer)
+const answer: string = await peer.answer(offer)
 ```
 <br>
 
 * `open` establishes a connection with `answer`
 ```ts
-await Peer.answer(answer)
+await peer.open(answer)
 ```
 <br>
 
 * `broadcast` sends data to all peers
 ```ts
-const data: any = { message: 'Hello World!' }
-Peer.broadcast(data)
+const data: object | string | number = { message: 'Hello World!' }
+Broadcast(data)
 ```
 <br>
 
@@ -111,7 +102,7 @@ Peer.broadcast(data)
 The UserMedia class supports callbacks as well as asynchronous functions. Each has an `allow` and `block` parameter, which are invoked depending on a user's prompt result. [[MDN]](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia) 
 
 ```ts
-Peer.media.microphone( 
+Media.microphone( 
     ( stream: MediaStream ) => ... , // allow
     ( ) => ... // block
 )
@@ -119,30 +110,30 @@ Peer.media.microphone(
 <br>
 
 
-* `media.microphone` adds the user's microphone's audio to PeerConnection and returns its MediaStream, if unavailable or blocked returns `null`
+* `Media.microphone` adds the user's microphone's audio to SimpleWebRTC and returns its MediaStream, if unavailable or blocked returns `null`
 ```ts
-const stream: MediaStream | void = await Peer.media.microphone()
+const stream: MediaStream | void = await Media.microphone()
 ```
 <br>
 
 
-* `media.camera` adds the user's cameras's audio to PeerConnection and returns its MediaStream, if unavailable or blocked returns `null`
+* `Media.camera` adds the user's cameras's video to SimpleWebRTC and returns its MediaStream, if unavailable or blocked returns `null`
 ```ts
-const stream: MediaStream | void = await Peer.media.camera()
+const stream: MediaStream | void = await Media.camera()
 ```
 <br>
 
 
-* `media.screen` prompts the user for a display/window/tab (with audio when available) and adds the user's choice to PeerConnection and returns its MediaStream, if unavailable or blocked returns `null`
+* `Media.screen` prompts the user for a display/window/tab (with audio when available) and adds the user's choice to SimpleWebRTC and returns its MediaStream, if unavailable or blocked returns `null`
 ```ts
-const stream: MediaStream | void = await Peer.media.microphone()
+const stream: MediaStream | void = await Media.microphone()
 ```
 <br>
 
-* `media.custom` uses custom constraints [[MDN]](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to add the resulting MediaStream to PeerConnection and returns its MediaStream, if unavailable or blocked returns `null`
+* `Media.custom` uses custom constraints [[MDN]](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to add the resulting MediaStream to SimpleWebRTC and returns its MediaStream, if unavailable or blocked returns `null`
 
 ```ts
-const stream: MediaStream | void = await Peer.media.custom({
+const stream: MediaStream | void = await Media.custom({
    video: true,  // default `false`
    audio: false, // default `false`
    screen: false // default `false`
@@ -150,7 +141,7 @@ const stream: MediaStream | void = await Peer.media.custom({
 ```
 callback syntax for `media.custom`:
 ```ts
-Peer.media.custom( constraints, allow, block )
+Media.custom( constraints, allow, block )
 ```
 <br>
 
@@ -159,7 +150,7 @@ Peer.media.custom( constraints, allow, block )
 
 All events return `async` functions, so all events can be used in combination with `await`. 
 ```js
-await Peer.on('open')
+await peer.on('open')
 ```
 Note that many of these events have no practical reason to be used this way, it is only for consistency and flexibility that it is provided.<br>
 <br>
@@ -167,7 +158,7 @@ Note that many of these events have no practical reason to be used this way, it 
 
 * `open`  a connection has been established, following `Peer.open()`
 ```ts
-Peer.on('open', () => {
+peer.on('open', () => {
     /* connection established, can transceive data */
 })
 ```
@@ -176,7 +167,7 @@ Peer.on('open', () => {
 
 * `message` data has been received, either by `Peer.broadcast()` or `DataChannel.send()`
 ```ts
-Peer.on('message', ( data: any ) => {
+peer.on('message', ( data: any ) => {
     /* if config.json is true, data will be parsed already */
 })
 ```
@@ -185,24 +176,27 @@ Peer.on('message', ( data: any ) => {
 
 * `icecandidate` ICE candidate has been found, handled internally and can be ignored
 ```ts
-Peer.on('icecandidate', ( candidate: RTCIceCandidate ) => ... )
+peer.on('icecandidate', ( candidate: RTCIceCandidate ) => ... )
 ```
 <br>
 
 
-* `track` track has been added via `media` [[MDN]](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack)<br>
+* `track` track has been added via `media` [[MDN]](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack)
+```ts
+peer.on('track', ({ streams } : { streams: MediaStream[] }) => ... )
+```
 <br>
 
 
 * `error` handled by `config.debug`
 ```ts
-Peer.on('error', ( method: string, message: string ) => ... )
+peer.on('error', ( method: string, message: string ) => ... )
 ```
 <br>
 
 
 * `log` handled by `config.log`
 ```ts
-Peer.on('log', ( message: string ) => ... )
+peer.on('log', ( message: string ) => ... )
 ```
 <br>
