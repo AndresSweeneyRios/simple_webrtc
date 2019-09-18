@@ -200,3 +200,11 @@ peer.on('error', ( method: string, message: string ) => ... )
 peer.on('log', ( message: string ) => ... )
 ```
 <br>
+<br>
+<br>
+
+If you have any questions or you're having trouble getting set up, feel free to message me.
+
+[andrewarivers@gmail.com](mailto:andrewarivers@gmail.com)
+[@Andr3wRiv3rs](https://twitter.com/Andr3wRiv3rs)
+PoisonApple#9351
