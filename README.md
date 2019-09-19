@@ -1,6 +1,5 @@
 # Simple WebRTC
 A WebRTC wrapper that aims to be the as short and concise as possible.<br>
-***Please note: Simple WebRTC is still in development and should not be used in production environments.***
 <br><br>
 
 
