@@ -8,7 +8,9 @@ A WebRTC wrapper that aims to be the as short and concise as possible.<br>
 
 ```bash
 yarn add @andrewrivers/simple_webrtc
+```
 or..
+```
 npm i --save @andrewrivers/simple_webrtc
 ```
 <br>
