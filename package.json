@@ -28,6 +28,6 @@
 		"@babel/plugin-proposal-class-properties": "^7.5.5",
 		"babel-preset-minify": "^0.5.1",
 		"express": "^4.17.1",
-		"nodemon": "^1.19.1"
+		"nodemon": "^1.19.2"
 	}
 }
