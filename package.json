@@ -10,7 +10,7 @@
 	},
 	"scripts": {
 		"example": "nodemon example/serve.js",
-		"dist": "babel src -d dist/browser",
+		"dist": "babel src --out-file dist/simple_webrtc.js",
 		"test-electron": "electron ./example/electron"
 	},
 	"license": "MIT",
