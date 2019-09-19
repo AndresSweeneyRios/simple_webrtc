@@ -18,8 +18,8 @@ npm i --save @andrewrivers/simple_webrtc
 ```js
 import SimpleWebRTC from 'simple_webrtc.js'
 ```
-[ES6 Standalone Release](https://github.com/Andr3wRiv3rs/simple_webrtc/releases/tag/0.3.0)
-<br>
+[Standalone Release](https://github.com/Andr3wRiv3rs/simple_webrtc/releases/tag/0.3.0)
+<br><br>
 
 
 ## usage
