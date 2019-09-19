@@ -9,7 +9,7 @@
 		"url": "https://poisonapple.dev"
 	},
 	"scripts": {
-		"example": "nodemon example/serve.js",
+		"example": "node example/serve.js",
 		"dist": "babel src --out-file dist/simple_webrtc.js",
 		"dist:min": "babel src --out-file dist/simple_webrtc.min.js --presets minify",
 		"test-electron": "electron ./example/electron"
@@ -27,7 +27,6 @@
 		"@babel/core": "^7.6.0",
 		"@babel/plugin-proposal-class-properties": "^7.5.5",
 		"babel-preset-minify": "^0.5.1",
-		"express": "^4.17.1",
-		"nodemon": "^1.19.2"
+		"express": "^4.17.1"
 	}
 }
