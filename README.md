@@ -197,10 +197,10 @@ peer.on('error', ( method: string, message: string ) => ... )
 peer.on('log', ( message: string ) => ... )
 ```
 <br>
-<br>
-<br>
 
 ---
+
+<br>
 
 If you have any questions or you're having trouble getting set up, feel free to message me.
 
