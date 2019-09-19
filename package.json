@@ -10,7 +10,8 @@
 	},
 	"scripts": {
 		"example": "nodemon example/serve.js",
-		"dist": "babel src --out-file dist/simple_webrtc.js",
+        "dist": "babel src --out-file dist/simple_webrtc.js",
+        "dist:min": "babel src --out-file dist/simple_webrtc.min.js --presets minify",
 		"test-electron": "electron ./example/electron"
 	},
 	"license": "MIT",
@@ -25,6 +26,7 @@
 		"@babel/cli": "^7.4.4",
 		"@babel/core": "^7.4.5",
 		"@babel/plugin-proposal-class-properties": "^7.4.4",
+		"babel-preset-minify": "^0.5.1",
 		"electron": "^5.0.3",
 		"express": "^4.17.1",
 		"nodemon": "^1.19.1"

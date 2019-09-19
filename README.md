@@ -8,18 +8,17 @@ A WebRTC wrapper that aims to be the as short and concise as possible.<br>
 
 ```bash
 yarn add @andrewrivers/simple_webrtc
-```
-
-alternatively:
-
-```bash
+or..
 npm i --save @andrewrivers/simple_webrtc
 ```
 <br>
 
 
 ## installation (es6)
-Import `dist/browser/webrtc/main.js`. Standalone version not yet available.<br>
+```js
+import SimpleWebRTC from 'simple_webrtc.js'
+```
+[ES6 Standalone Release](https://github.com/Andr3wRiv3rs/simple_webrtc/releases/tag/0.3.0)
 <br>
 
 
@@ -56,7 +55,7 @@ peer.on('track', ({ streams }) => ...)
 ## methods
 
 
-### main
+### connection
 
 * `offer` creates an offer, this is the first step in establishing a connection
 ```ts
@@ -76,10 +75,20 @@ await peer.open(answer)
 ```
 <br>
 
+
+### send data
+
 * `broadcast` sends data to all peers
 ```ts
 const data: object | string | number = { message: 'Hello World!' }
 Broadcast(data)
+```
+<br>
+
+* `peer.send` sends data to a single peer
+```ts
+const data: object | string | number = { message: 'Hello World!' }
+peer.send(data)
 ```
 <br>
 
@@ -154,7 +163,7 @@ peer.on('open', () => {
 
 * `message` data has been received, either by `Peer.broadcast()` or `DataChannel.send()`
 ```ts
-peer.on('message', ( data: any ) => {
+peer.on('message', ( data: string | number | object ) => {
     /* if config.json is true, data will be parsed already */
 })
 ```
