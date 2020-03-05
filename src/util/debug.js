@@ -31,12 +31,11 @@ export default {
 
 	// special styles to indicate a specific method being used
 
-	code (code, message) {
+	code (code) {
 		parseMessage(
 			'error', 
 			`${code}${typeof message === 'object' ? '' : '%c', ''}`, 
 			'padding: 3px 7px; background-color: rgb(40,40,40); color: white;',
-			message
 		)
 	},
 

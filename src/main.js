@@ -27,7 +27,7 @@ export default ( options ) => {
         })
     }
 
-    const Broadcast = ( ) => {
+    const Broadcast = ( data ) => {
         for (const peer of Object.values(peers))
             peer.send(data)
     }
