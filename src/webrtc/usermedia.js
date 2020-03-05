@@ -40,37 +40,13 @@ export default ({ emit, on }) => {
         }
     }
 
-    const microphone = async ( allow, block ) => {
-        try {
-            return await GetMedia({ audio: true }, allow, block)
-        } catch (error) {
-            emit('error', 'media.microphone', error)
-        }
-    }
+    const microphone = ( allow, block ) => GetMedia({ audio: true }, allow, block)
 
-    const camera = async ( allow, block ) => {
-        try {
-            return await GetMedia({ video: true }, allow, block)
-        } catch (error) {
-            emit('error', 'media.camera', error)
-        }
-    }
+    const camera = ( allow, block ) => GetMedia({ video: true }, allow, block)
 
-    const screen = async ( allow, block ) => {
-        try {
-            return await GetMedia({ video: true, audio: true, screen: true }, allow, block)
-        } catch (error) {
-            emit('error', 'media.screen', error)
-        }
-    }
+    const screen = ( allow, block ) => GetMedia({ video: true, audio: true, screen: true }, allow, block)
 
-    const custom = async ( constraints, allow, block ) => {
-        try {
-            return await GetMedia(constraints, allow, block)
-        } catch (error) {
-            emit('error', 'media.custom', )
-        }
-    }
+    const custom = ( constraints, allow, block ) => GetMedia(constraints, allow, block)
     
     return {
         GetMedia,

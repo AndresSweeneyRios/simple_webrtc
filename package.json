@@ -2,7 +2,7 @@
 	"name": "@andrewrivers/simple_webrtc",
 	"description": "A light wrapper for WebRTC communication.",
 	"main": "index.js",
-	"version": "0.4.2",
+	"version": "0.4.3",
 	"author": {
 		"name": "Andres Sweeney-Rios",
 		"email": "andrewarivers@gmail.com",
