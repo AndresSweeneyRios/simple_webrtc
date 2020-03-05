@@ -7,7 +7,7 @@ const parseMessage = (type, message, p1, p2, nameStyles = '') => {
     for (const i of Object.keys(debug.name.style)) 
         nameStyles += `${i}: ${debug.name.style[i]}; `
     
-    console[type](`%c${debug.name.string} %c${message}`, nameStyles, p1 || '', p2 || '' )
+    console[type](`%c${debug.name.string} %c${message}`, nameStyles )
 }
 
 

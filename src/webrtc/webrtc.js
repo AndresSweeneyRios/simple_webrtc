@@ -1,5 +1,6 @@
 import PeerConnection from './peerconnection.js'
 import Emitter from '../util/emitter.js'
+import UserMedia from './usermedia.js'
 
 export default ({ emit: globalEmit, on: globalOn, config }) => {
     const { on, emit } = Emitter()
@@ -49,17 +50,18 @@ export default ({ emit: globalEmit, on: globalOn, config }) => {
     }
     
     const renegotiate = async ( ) => {
-		emit('log', 'renegotiating')
-	
-        const { offer } = JSON.parse(await offer())
+        emit('log', 'renegotiating')
         
-		await peerConnection.SetLocalDescription(offer)
+        const { offer: newOffer, candidates } = JSON.parse(await offer())
+	
+		await peerConnection.SetLocalDescription(newOffer)
 
 		send(
 			JSON.stringify({
 				type: 'offer',
 				renegotiation: true,
-				sdp: peerConnection.localDescription
+                sdp: newOffer,
+                candidates,
 			}), 
 
 			false
@@ -80,7 +82,7 @@ export default ({ emit: globalEmit, on: globalOn, config }) => {
 
     const send = ( data, json, channel = 0 ) => {
 		peerConnection.datachannels[channel].send(data, json)
-	}
+    }
 
     on('offer', async offer => send(await answer(offer), false))
 
@@ -114,5 +116,6 @@ export default ({ emit: globalEmit, on: globalOn, config }) => {
         send,
         on,
         emit,
+        ...UserMedia({ emit, on, config }),
     }
 }

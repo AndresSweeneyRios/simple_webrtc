@@ -5,7 +5,7 @@ export default ({ emit, on, config }) => {
     const PeerConnection = new RTCPeerConnection()
 
     const AddIceCandidate = candidates => {
-        if (!candidates) throw 'no candidate(s) provided'
+        if (!candidates) return
 
         if (Array.isArray(candidates)) 
             for (const candidate of candidates) 
@@ -78,44 +78,40 @@ export default ({ emit, on, config }) => {
         }
 
         event.channel.onmessage = async message => {
-            try {
-                const data = JSON.parse(message.data)
+            const data = JSON.parse(message.data)
 
-                if (data.renegotiation) {
-                    emit('log', 'renegotiation')
+            if (data.renegotiation) {
+                emit('log', 'renegotiation')
 
-                    PeerConnection.SetRemoteDescription(data.sdp)
+                await AddIceCandidate(data.candidates)
 
-                    if (data.type === 'offer') {
-                        emit('log', 'sending renegotiation answer')
+                await SetRemoteDescription(data.sdp)
 
-                        const answer = await PeerConnection.createAnswer()
+                if (data.type === 'offer') {
+                    emit('log', 'sending renegotiation answer')
 
-                        await PeerConnection.SetLocalDescription(answer)
-                
-                        datachannels[0].send(
-                            JSON.stringify({
-                                type: 'answer',
-                                renegotiation: true,
-                                sdp: PeerConnection.localDescription
-                            }), 
-                
-                            false
-                        )
-                    }
+                    const answer = await PeerConnection.createAnswer()
 
-                    else emit('log', 'received renegotiation answer')
-
-                    return 
+                    SetLocalDescription(answer)
+            
+                    datachannels[0].send(
+                        JSON.stringify({
+                            type: 'answer',
+                            renegotiation: true,
+                            sdp: answer
+                        }), 
+            
+                        false
+                    )
                 }
 
-                if (data.type === 'icecandidate') {
-                    emit('log', 'received ice candidate')
+                else emit('log', 'received renegotiation answer')
 
-                    return AddIceCandidate(data.candidate)
-                }
-            } catch (error) {
-                console.error(error)
+                return 
+            } else if (data.type === 'icecandidate') {
+                emit('log', 'received ice candidate')
+
+                return AddIceCandidate(data.candidate)
             }
 
             emit(

@@ -1,17 +1,24 @@
 import SimpleWebRTC from '../scripts/webrtc/main.js'
 
-;(async () => {
-    const Local = SimpleWebRTC().Peer()
-    const Remote = SimpleWebRTC().Peer()
+const config = { 
+	debug: true, 
+	log: true
+}
 
-    const offer = await Local.offer()
+const Local = SimpleWebRTC(config).Peer()
+
+const Remote = SimpleWebRTC(config).Peer()
+
+Local.offer().then( async offer => {
     const answer = await Remote.answer(offer)
+
     Local.open(answer)
 
-    await Local.on('open', () => console.log('Open!'))
-    await Remote.on('open', () => console.log('Open!'))
+    await Local.on('open')
+
+    console.log('Open!')
 
     Remote.on('message', console.log)
-
+    
     Local.send('abcdefg')
-})()
+})

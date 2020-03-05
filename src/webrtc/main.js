@@ -1,6 +1,5 @@
 import Emitter from '../util/emitter.js'
 import WebRTC from './webrtc.js'
-import UserMedia from './usermedia.js'
 import Debug from '../util/debug.js'
 
 export default ( options ) => {
@@ -18,7 +17,7 @@ export default ( options ) => {
     }
 
     if (config.debug) {
-        on('error', (code,message) => {
+        on('error', (code, message) => {
             if (message) Debug.code(code,message)
             else Debug.error(code)
         })
@@ -35,14 +34,11 @@ export default ( options ) => {
             peer.send(data)
     }
 
-    const Media = new UserMedia({ config })
-
     return {
         emit,
         on,
         peers,
         Peer,
         Broadcast,
-        Media,
     }
 }

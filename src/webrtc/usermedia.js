@@ -1,25 +1,19 @@
-export default class {
-	constructor ({ emit, on }) {
-		Object.assign( this, { 
-			emit, on
-		})
-	}
-
-	async GetMedia ( { video, audio, screen } = { video: false, audio: false }, allow, block ) {
+export default ({ emit, on }) => {
+	const GetMedia = async ( { video, audio, screen } = { video: false, audio: false }, allow, block ) => {
 		try {
 			const media = screen 
 				? await navigator.mediaDevices.getDisplayMedia({ audio, video })
 				: await navigator.mediaDevices.getUserMedia({ audio, video })
 
 			for (const track of media.getTracks()) {
-				this.emit('addtrack', {
+				emit('addtrack', {
 					track,
 					streams: [media]
 				})
 			}
 
-			await this.on('negotiationneeded')
-			this.emit('media-negotiation')
+			await on('negotiationneeded')
+			emit('media-negotiation')
 
 			if (allow) 
 				if (typeof allow === 'function') allow(media)
@@ -36,7 +30,7 @@ export default class {
 				throw error
 			}
 
-			this.emit('error', 'media.GetMedia', 'unable to access requested media')
+			emit('error', 'media.GetMedia', 'unable to access requested media')
 
 			if (block) 
 				if (typeof block === 'function') block()
@@ -46,35 +40,43 @@ export default class {
 		}
 	}
 
-	async microphone ( allow, block ) {
+	const microphone = async ( allow, block ) => {
 		try {
-			return await this.GetMedia({ audio: true }, allow, block)
+			return await GetMedia({ audio: true }, allow, block)
 		} catch (error) {
-			this.emit('error', 'media.microphone', error)
+			emit('error', 'media.microphone', error)
 		}
 	}
 
-	async camera ( allow, block ) {
+	const camera = async ( allow, block ) => {
 		try {
-			return await this.GetMedia({ video: true }, allow, block)
+			return await GetMedia({ video: true }, allow, block)
 		} catch (error) {
-			this.emit('error', 'media.camera', error)
+			emit('error', 'media.camera', error)
 		}
 	}
 
-	async screen ( allow, block ) {
+	const screen = async ( allow, block ) => {
 		try {
-			return await this.GetMedia({ video: true, audio: true, screen: true }, allow, block)
+			return await GetMedia({ video: true, audio: true, screen: true }, allow, block)
 		} catch (error) {
-			this.emit('error', 'media.screen', error)
+			emit('error', 'media.screen', error)
 		}
 	}
 
-	async custom ( constraints, allow, block ) {
+	const custom = async ( constraints, allow, block ) => {
 		try {
-			return await this.GetMedia(constraints, allow, block)
+			return await GetMedia(constraints, allow, block)
 		} catch (error) {
-			this.emit('error', 'media.custom', )
+			emit('error', 'media.custom', )
 		}
-	}
+    }
+    
+    return {
+        GetMedia,
+        custom,
+        screen,
+        camera,
+        microphone,
+    }
 }
