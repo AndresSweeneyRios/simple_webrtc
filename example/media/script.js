@@ -1,4 +1,4 @@
-import SimpleWebRTC from '../scripts/webrtc/main.js'
+import SimpleWebRTC from '../scripts/main.js'
 
 const $ = e => document.querySelector(e)
 

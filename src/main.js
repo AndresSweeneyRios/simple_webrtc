@@ -1,6 +1,6 @@
-import Emitter from '../util/emitter.js'
-import WebRTC from './webrtc.js'
-import Debug from '../util/debug.js'
+import Emitter from './util/emitter.js'
+import Peer from './webrtc/peer.js'
+import Debug from './util/debug.js'
 
 export default ( options ) => {
     const { emit, on } = Emitter()
@@ -27,8 +27,6 @@ export default ( options ) => {
         })
     }
 
-    const Peer = name => peers[name] = WebRTC({ on, emit, config })
-
     const Broadcast = ( ) => {
         for (const peer of Object.values(peers))
             peer.send(data)
@@ -38,7 +36,11 @@ export default ( options ) => {
         emit,
         on,
         peers,
-        Peer,
         Broadcast,
+        Peer (name = peers.length) {
+            peers[name] = Peer({ emit, config })
+
+            return peers[name]
+        }
     }
 }

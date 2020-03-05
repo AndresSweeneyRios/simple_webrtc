@@ -2,7 +2,7 @@ import PeerConnection from './peerconnection.js'
 import Emitter from '../util/emitter.js'
 import UserMedia from './usermedia.js'
 
-export default ({ emit: globalEmit, on: globalOn, config }) => {
+export default ({ emit: globalEmit, config }) => {
     const { on, emit } = Emitter()
 
     let icecomplete = false

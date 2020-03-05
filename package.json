@@ -2,7 +2,7 @@
 	"name": "@andrewrivers/simple_webrtc",
 	"description": "A light wrapper for WebRTC communication.",
 	"main": "index.js",
-	"version": "0.3.0",
+	"version": "0.4.2",
 	"author": {
 		"name": "Andres Sweeney-Rios",
 		"email": "andrewarivers@gmail.com",
@@ -10,23 +10,16 @@
 	},
 	"scripts": {
 		"example": "node example/serve.js",
-		"dist": "babel src --out-file dist/simple_webrtc.js",
-		"dist:min": "babel src --out-file dist/simple_webrtc.min.js --presets minify",
-		"test-electron": "electron ./example/electron"
+		"dist": "rollup -c"
 	},
 	"license": "MIT",
 	"repository": "",
 	"keywords": [
 		"webrtc"
 	],
-	"dependencies": {
-		"esm": "^3.2.25"
-	},
+	"dependencies": {},
 	"devDependencies": {
-		"@babel/cli": "^7.6.0",
-		"@babel/core": "^7.6.0",
-		"@babel/plugin-proposal-class-properties": "^7.5.5",
-		"babel-preset-minify": "^0.5.1",
-		"express": "^4.17.1"
+		"express": "^4.17.1",
+		"rollup": "^1.32.0"
 	}
 }
