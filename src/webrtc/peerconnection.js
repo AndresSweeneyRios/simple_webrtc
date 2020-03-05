@@ -17,7 +17,7 @@ export default ({ emit, on, config }) => {
         emit('log', 'added ice candidate(s)')
     }
 
-	const AddTrack = ( track, streams = [] ) => {
+    const AddTrack = ( track, streams = [] ) => {
         if (!track) throw 'no track provided'
 
         if (!Array.isArray(streams)) streams = [streams]
@@ -25,9 +25,9 @@ export default ({ emit, on, config }) => {
         PeerConnection.addTrack(track, ...streams)
 
         emit('log', 'added track(s)')
-	}
-	
-	const CreateDataChannel = () => {
+    }
+    
+    const CreateDataChannel = () => {
         const DataChannel = PeerConnection.createDataChannel( "main", { reliable: true } )
 
         const send = async ( data, json = undefined ) => {
@@ -48,28 +48,28 @@ export default ({ emit, on, config }) => {
             DataChannel, 
             send
         }
-	}
+    }
 
 
     const SetLocalDescription = async offer => {
         await PeerConnection.setLocalDescription(
-			new RTCSessionDescription(offer)
-		)
+            new RTCSessionDescription(offer)
+        )
 
-		emit('log', 'set local description')
-	}
+        emit('log', 'set local description')
+    }
 
     const SetRemoteDescription = async offer => {
         await PeerConnection.setRemoteDescription(
-			new RTCSessionDescription(offer)
-		)
+            new RTCSessionDescription(offer)
+        )
 
-		emit('log', 'set remote description')
-	}
+        emit('log', 'set remote description')
+    }
 
-	const Broadcast = data => {
-		for (const { send } of datachannels) send(data)
-	}
+    const Broadcast = data => {
+        for (const { send } of datachannels) send(data)
+    }
 
     PeerConnection.ondatachannel = event => {
         event.channel.onopen = () => {
@@ -125,7 +125,7 @@ export default ({ emit, on, config }) => {
     }
 
     PeerConnection.onerror = event => emit('error', 'PeerConnection', event)
-		
+        
     PeerConnection.onicecandidate = event => {
         if (event.candidate) {
             emit('icecandidate', event.candidate)

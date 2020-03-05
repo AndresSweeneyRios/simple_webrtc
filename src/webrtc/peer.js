@@ -53,19 +53,19 @@ export default ({ emit: globalEmit, config }) => {
         emit('log', 'renegotiating')
         
         const { offer: newOffer, candidates } = JSON.parse(await offer())
-	
-		await peerConnection.SetLocalDescription(newOffer)
+    
+        await peerConnection.SetLocalDescription(newOffer)
 
-		send(
-			JSON.stringify({
-				type: 'offer',
-				renegotiation: true,
+        send(
+            JSON.stringify({
+                type: 'offer',
+                renegotiation: true,
                 sdp: newOffer,
                 candidates,
-			}), 
+            }), 
 
-			false
-		)
+            false
+        )
     }
     
     const open = answerObject => {
@@ -78,10 +78,10 @@ export default ({ emit: globalEmit, config }) => {
         peerConnection.AddIceCandidate(candidates)
 
         return on('open')
-	}
+    }
 
     const send = ( data, json, channel = 0 ) => {
-		peerConnection.datachannels[channel].send(data, json)
+        peerConnection.datachannels[channel].send(data, json)
     }
 
     on('offer', async offer => send(await answer(offer), false))

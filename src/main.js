@@ -5,13 +5,13 @@ import Debug from './util/debug.js'
 export default ( options ) => {
     const { emit, on } = Emitter()
 
-	const peers = {}
+    const peers = {}
 
-	const config = {
-		log: false,
-		debug: false,
-		peer: {
-			json: true
+    const config = {
+        log: false,
+        debug: false,
+        peer: {
+            json: true
         },
         ...options
     }

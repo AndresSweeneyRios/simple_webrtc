@@ -13,33 +13,33 @@ const parseMessage = (type, message, p1, p2, nameStyles = '') => {
 
 export default {
     log (message) {
-		parseMessage('log', message) 
-	},
+        parseMessage('log', message) 
+    },
 
-	error (message) {
-		parseMessage('error', message)
-	},
-	
-	dir (message)  {
-		parseMessage('dir', message)
-	},
+    error (message) {
+        parseMessage('error', message)
+    },
+    
+    dir (message)  {
+        parseMessage('dir', message)
+    },
 
-	warn (message) {
-		parseMessage('warn', message)
-	},
+    warn (message) {
+        parseMessage('warn', message)
+    },
 
 
-	// special styles to indicate a specific method being used
+    // special styles to indicate a specific method being used
 
-	code (code) {
-		parseMessage(
-			'error', 
-			`${code}${typeof message === 'object' ? '' : '%c', ''}`, 
-			'padding: 3px 7px; background-color: rgb(40,40,40); color: white;',
-		)
-	},
+    code (code) {
+        parseMessage(
+            'error', 
+            `${code}${typeof message === 'object' ? '' : '%c', ''}`, 
+            'padding: 3px 7px; background-color: rgb(40,40,40); color: white;',
+        )
+    },
 
-	table (message) {
-		parseMessage('table', message)
-	},
+    table (message) {
+        parseMessage('table', message)
+    },
 }
