@@ -17,7 +17,7 @@ npm i --save @andrewrivers/simple_webrtc
 
 ## installation (es6)
 ```js
-import SimpleWebRTC from 'simple_webrtc.js'
+import SimpleWebRTC from './simple_webrtc.js'
 ```
 [Standalone Release](https://github.com/Andr3wRiv3rs/simple_webrtc/releases/latest)
 <br><br>
@@ -25,7 +25,7 @@ import SimpleWebRTC from 'simple_webrtc.js'
 
 ## usage
 ```ts
-import SimpleWebRTC from './SimpleWebRTC.js'
+import SimpleWebRTC from '@andrewrivers/simple_webrtc'
 
 const { Peer, Broadcast } = SimpleWebRTC()
 
