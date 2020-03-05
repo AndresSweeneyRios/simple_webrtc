@@ -11,22 +11,22 @@ const parseMessage = (type, message, p1, p2, nameStyles = '') => {
 }
 
 
-export default new class {
+export default {
     log (message) {
 		parseMessage('log', message) 
-	}
+	},
 
 	error (message) {
 		parseMessage('error', message)
-	}
+	},
 	
 	dir (message)  {
 		parseMessage('dir', message)
-	}
+	},
 
 	warn (message) {
 		parseMessage('warn', message)
-	}
+	},
 
 
 	// special styles to indicate a specific method being used
@@ -38,9 +38,9 @@ export default new class {
 			'padding: 3px 7px; background-color: rgb(40,40,40); color: white;',
 			message
 		)
-	}
+	},
 
 	table (message) {
 		parseMessage('table', message)
-	}
+	},
 }

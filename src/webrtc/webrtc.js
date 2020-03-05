@@ -1,173 +1,118 @@
 import PeerConnection from './peerconnection.js'
-import Emitter from '../util/emitter.js';
+import Emitter from '../util/emitter.js'
 
-export default class extends Emitter {
-	peerConnection
-	dataChannel
-	icecomplete = false
+export default ({ emit: globalEmit, on: globalOn, config }) => {
+    const { on, emit } = Emitter()
 
-	constructor ({ config, emit, on }) {
-		super()
+    let icecomplete = false
 
-		// create new PeerConnection
+    const peerConnection = PeerConnection({ emit, on, config: config.peer })
 
-		this.peerConnection = new PeerConnection(config.peer, this)
-		this.peerConnection.CreateDataChannel()
+    peerConnection.CreateDataChannel()
 
-		this.datachannels = this.peerConnection.datachannels
-		
-		this.on('offer', async offer => {
-			this.send(await this.answer(offer), false)
-		})
+    const offer = async ( ) => {
+        const offer = await peerConnection.raw.createOffer()
 
-		this.on('icecomplete', () => {
-			this.icecomplete = true
-		})
+        peerConnection.SetLocalDescription(offer)
 
-		on('media-negotiation', async () => {
-			this.renegotiate()
-		})
+        if (!icecomplete) await on('icecomplete')
+        
+        const { candidates } = peerConnection
 
-		on('addtrack', track => 
-			this.emit('addtrack', track)
-		)
-
-		this.on('negotiationneeded', () =>
-			emit('negotiationneeded')
-		)
-
-		this.on('log', message => {
-			emit('log', message)
-		})
-
-		this.on('error', (code, message) => {
-			emit('error', code, message)
-		})
-
-		;(async () => {
-			await this.on('open')
-
-			this.on('icecandidate', candidate => {
-				if (candidate) this.send({
-					candidate,
-					type: 'icecandidate'
-				}, true)
-			})
-		})()
-	}
-
-
-	// create offer (starting point)
-
-    async offer ( ) {
-		try {
-			return await new Promise ( (resolve, reject) => {
-				this.peerConnection.createOffer(
-					async offer => {
-						this.peerConnection.SetLocalDescription(offer)
-
-						if (!this.icecomplete) await this.on('icecomplete')
-						
-						resolve(
-							JSON.stringify({
-								offer,
-								candidates: this.peerConnection.candidates,
-								type: 'offer'
-							})
-						)
-					},
-
-					error => reject(error)
-				)
-			})
-		} catch (error) {
-			this.emit('error', 'offer', error)
-		}
+        return JSON.stringify({
+            offer,
+            candidates,
+            type: 'offer'
+        })
     }
 
+    const answer = async offerObject => {
+        if (!offerObject) throw 'no offer provided'
 
-	// create answer with offer
+        const { offer, candidates } = JSON.parse(offerObject)
 
-    async answer ( offerObject )  {
-		try {
-			if (!offerObject) throw 'no offer provided'
+        peerConnection.SetRemoteDescription(offer)
 
-			if (typeof offerObject === 'string') 
-				offerObject = JSON.parse(offerObject)
+        const answer = await peerConnection.raw.createAnswer()
 
-			const { offer, candidates } = offerObject
+        peerConnection.SetLocalDescription(answer)
 
-			this.peerConnection.SetRemoteDescription(offer)
-			
-			return await new Promise( (resolve, reject) => 
-				this.peerConnection.createAnswer( 
-					async answer => {
-						this.peerConnection.SetLocalDescription(answer)
+        if (!icecomplete) await on('icecomplete')
 
-						if (!this.icecomplete) await this.on('icecomplete')
+        peerConnection.AddIceCandidate(candidates)
 
-						resolve(
-							JSON.stringify({
-								answer: answer,
-								candidates: this.peerConnection.candidates,
-								type: 'answer'
-							})
-						)
-
-						this.peerConnection.AddIceCandidate(candidates)
-					},
-
-					error => reject(error)
-				)
-			)
-		} catch (error) {
-			this.emit('error', 'answer', error)
-		}
-	}
+        return JSON.stringify({
+            answer: answer,
+            candidates: peerConnection.candidates,
+            type: 'answer'
+        })
+    }
+    
+    const renegotiate = async ( ) => {
+		emit('log', 'renegotiating')
 	
-	async renegotiate ( ) {
-		this.emit('log', 'renegotiating')
-	
-		const { offer } = JSON.parse(await this.offer())
-		await this.peerConnection.SetLocalDescription(offer)
+        const { offer } = JSON.parse(await offer())
+        
+		await peerConnection.SetLocalDescription(offer)
 
-		this.send(
+		send(
 			JSON.stringify({
 				type: 'offer',
 				renegotiation: true,
-				sdp: this.peerConnection.localDescription
+				sdp: peerConnection.localDescription
 			}), 
 
 			false
 		)
+    }
+    
+    const open = answerObject => {
+        if (!answerObject) throw 'no answer provided'
+
+        const { answer, candidates } = JSON.parse(answerObject)
+
+        peerConnection.SetRemoteDescription(answer)
+
+        peerConnection.AddIceCandidate(candidates)
+
+        return on('open')
 	}
 
-
-	// establish connection with answer object
-
-	async open ( answerObject ) {
-		try {
-			if (!answerObject) throw 'no answer provided'
-
-			if (typeof answerObject === 'string') 
-				answerObject = JSON.parse(answerObject)
-
-			const { answer, candidates } = answerObject
-
-			this.peerConnection.SetRemoteDescription(answer)
-
-			this.peerConnection.AddIceCandidate(candidates)
-
-			await this.on('open')
-
-			return
-		} catch (error) {
-			this.emit('error', 'open', error)
-		}
+    const send = ( data, json, channel = 0 ) => {
+		peerConnection.datachannels[channel].send(data, json)
 	}
 
+    on('offer', async offer => send(await answer(offer), false))
 
-	send ( data, json, channel = 0 ) {
-		this.peerConnection.datachannels[channel].send(data, json)
-	}
+    on('icecomplete', () => icecomplete = true)
+
+    on('media-negotiation', async () => renegotiate())
+    
+
+    // TODO: test if this works without 'open' event
+
+    on('open', () => {
+        on('icecandidate', candidate => {
+            if (candidate) send({
+                candidate,
+                type: 'icecandidate'
+            }, true)
+        })
+    })
+
+    //
+
+    on('log', message => globalEmit('log', message))
+
+    on('error', (code, message) => globalEmit('error', code, message))
+
+    return {
+        offer,
+        answer, 
+        renegotiate,
+        open,
+        send,
+        on,
+        emit,
+    }
 }

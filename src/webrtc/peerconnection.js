@@ -1,215 +1,172 @@
-export default class extends RTCPeerConnection {
-	candidates = []
-	datachannels = []
+export default ({ emit, on, config }) => {
+    const candidates = []
+    const datachannels = []
 
-	constructor ( config, { emit, on }) {
-		super()
+    const PeerConnection = new RTCPeerConnection()
 
-		Object.assign( this, { 
-			config, emit, on
-		})
+    const AddIceCandidate = candidates => {
+        if (!candidates) throw 'no candidate(s) provided'
 
-		this.addEventListener('datachannel', event => {
+        if (Array.isArray(candidates)) 
+            for (const candidate of candidates) 
+                PeerConnection.addIceCandidate(new RTCIceCandidate(candidate))
 
-			// invoked when a connection has been established
-			// at this point it is safe to communicate
+        else 
+            PeerConnection.addIceCandidate(new RTCIceCandidate(candidates))
 
-			event.channel.onopen = () => {
-				this.emit('open')
-				this.emit('log', 'datachannel open')
-			}
-			
-
-			// the receiving event for the `DataChannel.send` method
-
-			event.channel.onmessage = async message => {
-				try {
-					const data = JSON.parse(message.data)
-
-					if (data.renegotiation) {
-						this.emit('log', 'renegotiation')
-
-						this.SetRemoteDescription(data.sdp)
-
-						if (data.type === 'offer') {
-							emit('log', 'sending renegotiation answer')
-
-							const answer = await this.createAnswer()
-							await this.SetLocalDescription(answer)
-					
-							this.datachannels[0].send(
-								JSON.stringify({
-									type: 'answer',
-									renegotiation: true,
-									sdp: this.localDescription
-								}), 
-					
-								false
-							)
-						}
-
-						else emit('log', 'received renegotiation answer')
-
-						return 
-					}
-
-					if (data.type === 'icecandidate') {
-						this.emit('log', 'received ice candidate')
-						return this.AddIceCandidate(data.candidate)
-					}
-				} catch {}
-
-				this.emit(
-					'message', 
-					
-					this.config.json 
-						? JSON.parse(message.data)
-						: message.data
-				)
-			}
-
-			event.channel.onerror = error => this.emit('error', 'PeerConnection.DataChannel', error)
-		})
-
-		this.addEventListener('error', event => {
-			this.emit('error', 'PeerConnection', event)
-		})
-		
-		this.addEventListener('icecandidate', event => {
-			if (event.candidate) {
-				this.emit('icecandidate', event.candidate)
-				this.candidates.push(event.candidate)
-				this.emit('log', 'found ice candidate')
-			}
-		})
-		
-
-		// once this event is emitted, the offer/answer methods will resolve
-		// this allows offers/answers to be transceived in one string (per peer)
-		
-		this.addEventListener('icegatheringstatechange', event => {
-			if (event.target.iceGatheringState === 'complete') {
-				this.emit('icecomplete', event)
-				this.emit('log', 'ice gathering complete')
-			}
-		})
-		
-
-		// receiving event for added media tracks
-
-		this.ontrack = event => { 
-			this.emit('track', event)
-		}
-	
-		this.emit('log', 'created peer')
-
-		
-		this.addEventListener('negotiationneeded', event => {
-			this.emit('negotiationneeded', event)
-			this.emit('log', 'negotiation needed')
-		})
-
-		this.on('addtrack', ({ track, streams }) => {
-			this.AddTrack(track, ...streams)
-		})
-	}
-
-
-	// invoked by the `answer` and `open` methods
-	// bulk/individually add ice candidates
-
-    AddIceCandidate ( candidates ) {
-		try {
-			if (!candidates) throw 'no candidate(s) provided'
-
-			if (Array.isArray(candidates)) 
-				for (const candidate of candidates) 
-					this.addIceCandidate(new RTCIceCandidate(candidate))
-			else 
-				this.addIceCandidate(new RTCIceCandidate(candidates))
-
-			this.emit('log', 'added ice candidate(s)')
-		} catch (error) {
-			this.emit('error', 'PeerConnection.addIceCandidate', 'no candidate(s) provided')
-		}
+        emit('log', 'added ice candidate(s)')
     }
 
+	const AddTrack = ( track, streams = [] ) => {
+        if (!track) throw 'no track provided'
 
-	// add a media track (video, audio, canvas)
-	// it is also used by the UserMedia class
+        if (!Array.isArray(streams)) streams = [streams]
 
-	AddTrack ( track, streams = [] ) {
-		try {
-			if (!track) throw 'no track provided'
+        PeerConnection.addTrack(track, ...streams)
 
-			if (!Array.isArray(streams)) streams = [streams]
-			this.addTrack(track, ...streams)
-
-			this.emit('log', 'added track(s)')
-		} catch (error) {
-			this.emit('error', 'PeerConnection.addTrack', error)
-		}
+        emit('log', 'added track(s)')
 	}
 	
+	const CreateDataChannel = () => {
+        const DataChannel = PeerConnection.createDataChannel( "main", { reliable: true } )
 
-	// DataChannel creation, contains the `send` method
-	// automatically stringifies content unless configured otherwise
+        const send = async ( data, json = undefined ) => {
+            if (!data) throw 'no data provided'
 
-	CreateDataChannel () {
-		try {
-			const DataChannel = this.createDataChannel( "main", { reliable: true } )
+            DataChannel.send(
+                ( json !== undefined ? json : config.json )
+                    ? JSON.stringify(data)
+                    : data
+            )
+        }
 
-			const send = async ( data, json = undefined ) => {
-				if (!data) throw 'no data provided'
+        datachannels.push({ DataChannel, send })
 
-				DataChannel.send(
-					( json !== undefined ? json : this.config.json )
-						? JSON.stringify(data)
-						: data
-				)
+        emit('log', 'created data channel')
+
+        return {
+            DataChannel, 
+            send
+        }
+	}
+
+
+    const SetLocalDescription = async offer => {
+        await PeerConnection.setLocalDescription(
+			new RTCSessionDescription(offer)
+		)
+
+		emit('log', 'set local description')
+	}
+
+    const SetRemoteDescription = async offer => {
+        await PeerConnection.setRemoteDescription(
+			new RTCSessionDescription(offer)
+		)
+
+		emit('log', 'set remote description')
+	}
+
+	const Broadcast = data => {
+		for (const { send } of datachannels) send(data)
+	}
+
+    PeerConnection.ondatachannel = event => {
+        event.channel.onopen = () => {
+            emit('open')
+            emit('log', 'datachannel open')
+        }
+
+        event.channel.onmessage = async message => {
+            try {
+                const data = JSON.parse(message.data)
+
+                if (data.renegotiation) {
+                    emit('log', 'renegotiation')
+
+                    PeerConnection.SetRemoteDescription(data.sdp)
+
+                    if (data.type === 'offer') {
+                        emit('log', 'sending renegotiation answer')
+
+                        const answer = await PeerConnection.createAnswer()
+
+                        await PeerConnection.SetLocalDescription(answer)
+                
+                        datachannels[0].send(
+                            JSON.stringify({
+                                type: 'answer',
+                                renegotiation: true,
+                                sdp: PeerConnection.localDescription
+                            }), 
+                
+                            false
+                        )
+                    }
+
+                    else emit('log', 'received renegotiation answer')
+
+                    return 
+                }
+
+                if (data.type === 'icecandidate') {
+                    emit('log', 'received ice candidate')
+
+                    return AddIceCandidate(data.candidate)
+                }
+            } catch (error) {
+                console.error(error)
+            }
+
+            emit(
+                'message', 
+                
+                config.json 
+                    ? JSON.parse(message.data)
+                    : message.data
+            )
+        }
+    }
+
+    PeerConnection.onerror = event => emit('error', 'PeerConnection', event)
 		
-				return
-			}
+    PeerConnection.onicecandidate = event => {
+        if (event.candidate) {
+            emit('icecandidate', event.candidate)
+            candidates.push(event.candidate)
+            emit('log', 'found ice candidate')
+        }
+    }
 
-			this.datachannels.push({
-				DataChannel, send
-			})
+    PeerConnection.onicegatheringstatechange = event => {
+        if (event.target.iceGatheringState === 'complete') {
+            emit('icecomplete', event)
+            emit('log', 'ice gathering complete')
+        }
+    }
 
-			this.emit('log', 'created data channel')
+    PeerConnection.ontrack = event => { 
+        emit('track', event)
+    }
 
-			return {
-				DataChannel, send
-			}
-		} catch (error) {
-			this.emit('error', 'PeerConnection.CreateDataChannel', error)
-		}
-	}
+    PeerConnection.onnegotiationneeded = event => {
+        emit('negotiationneeded', event)
+        emit('log', 'negotiation needed')
+    }
 
+    on('addtrack', ({ track, streams }) => {
+        AddTrack(track, ...streams)
+    })
 
-	// local/remote descriptions take an offer/answer object
-
-    async SetLocalDescription ( offer ) {
-        await this.setLocalDescription(
-			new RTCSessionDescription(offer)
-		)
-
-		this.emit('log', 'set local description')
-
-		return
-	}
-
-    async SetRemoteDescription ( offer ) {
-        await this.setRemoteDescription(
-			new RTCSessionDescription(offer)
-		)
-
-		this.emit('log', 'set remote description')
-
-		return
-	}
-
-	Broadcast (data) {
-		for (const { send } of this.datachannels)
-			send(data)
-	}
+    return {
+        AddIceCandidate,
+        AddTrack,
+        CreateDataChannel,
+        SetLocalDescription,
+        SetRemoteDescription,
+        Broadcast,
+        raw: PeerConnection,
+        candidates,
+        datachannels,
+    }
 }

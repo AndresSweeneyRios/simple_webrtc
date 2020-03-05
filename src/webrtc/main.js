@@ -3,55 +3,46 @@ import WebRTC from './webrtc.js'
 import UserMedia from './usermedia.js'
 import Debug from '../util/debug.js'
 
-export default class extends Emitter {
-	peers = {}
+export default ( options ) => {
+    const { emit, on } = Emitter()
 
-	config = {
+	const peers = {}
+
+	const config = {
 		log: false,
 		debug: false,
 		peer: {
 			json: true
-		} 
-	}
+        },
+        ...options
+    }
 
-	constructor ( options ) {
-		super()
+    if (config.debug) {
+        on('error', (code,message) => {
+            if (message) Debug.code(code,message)
+            else Debug.error(code)
+        })
 
-		// assign user options to default config
+        if (config.log) on('log', (message) => {
+            Debug.log(message)
+        })
+    }
 
-		Object.assign(this.config, options)
-		
-		// enable debugging features
+    const Peer = name => peers[name] = WebRTC({ on, emit, config })
 
-		if (this.config.debug) {
-			this.on('error', (code,message) => {
-				if (message) Debug.code(code,message)
-				else Debug.error(code)
-			})
+    const Broadcast = ( ) => {
+        for (const peer of Object.values(peers))
+            peer.send(data)
+    }
 
-			if (this.config.log) this.on('log', (message) => {
-				Debug.log(message)
-			})
-		}
-	}
+    const Media = new UserMedia({ config })
 
-	Peer = ( name ) => {
-		return this.peers[name] = new WebRTC(this)
-	}
-
-	get Broadcast ( ) {
-		const { peers } = this
-
-		return ( data ) => {
-			for (const peer of Object.values(peers))
-				peer.send(data)
-		}
-	}
-
-
-	// getter forwards emitter to UserMedia
-
-	get Media ( ) {
-		return new UserMedia(this)
-	}
+    return {
+        emit,
+        on,
+        peers,
+        Peer,
+        Broadcast,
+        Media,
+    }
 }
