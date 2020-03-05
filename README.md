@@ -19,7 +19,7 @@ npm i --save @andrewrivers/simple_webrtc
 ```js
 import SimpleWebRTC from 'simple_webrtc.js'
 ```
-[Standalone Release](https://github.com/Andr3wRiv3rs/simple_webrtc/releases/tag/0.3.0)
+[Standalone Release](https://github.com/Andr3wRiv3rs/simple_webrtc/releases/latest)
 <br><br>
 
 
@@ -27,7 +27,7 @@ import SimpleWebRTC from 'simple_webrtc.js'
 ```ts
 import SimpleWebRTC from './SimpleWebRTC.js'
 
-const { Peer, Broadcast, Media } = new SimpleWebRTC()
+const { Peer, Broadcast } = SimpleWebRTC()
 
 const peer = Peer('local')
 const offer = await peer.offer( )
@@ -40,13 +40,13 @@ peer.on('message', ( message ) => ...)
 peer.on('error', ( error ) => ...)
 peer.on('close', ( ) => ...)
 
-peer.send({ abc: "def"})
+peer.send({ abc: "def" })
 
 Broadcast("hello world")
 
-const camera = Media.camera( )
-const microphone = Media.microphone( )
-const screenshare = Media.screen( )
+const camera = Peer.camera( )
+const microphone = Peer.microphone( )
+const screenshare = Peer.screen( )
 
 peer.on('track', ({ streams }) => ...)
 
@@ -99,7 +99,7 @@ peer.send(data)
 The UserMedia class supports callbacks as well as asynchronous functions. Each has an `allow` and `block` parameter, which are invoked depending on a user's prompt result. [[MDN]](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia) 
 
 ```ts
-Media.microphone( 
+Peer.microphone( 
     ( stream: MediaStream ) => ... , // allow
     ( ) => ... // block
 )
@@ -107,38 +107,38 @@ Media.microphone(
 <br>
 
 
-* `Media.microphone` adds the user's microphone's audio to SimpleWebRTC and returns its MediaStream, if unavailable or blocked returns `null`
+* `Peer.microphone` adds the user's microphone's audio to a peer and returns its MediaStream, if unavailable or blocked returns `null`
 ```ts
-const stream: MediaStream | void = await Media.microphone()
+const stream: MediaStream | void = await Peer.microphone()
 ```
 <br>
 
 
-* `Media.camera` adds the user's cameras's video to SimpleWebRTC and returns its MediaStream, if unavailable or blocked returns `null`
+* `Peer.camera` adds the user's cameras's video to a peer and returns its MediaStream, if unavailable or blocked returns `null`
 ```ts
-const stream: MediaStream | void = await Media.camera()
+const stream: MediaStream | void = await Peer.camera()
 ```
 <br>
 
 
-* `Media.screen` prompts the user for a display/window/tab (with audio when available) and adds the user's choice to SimpleWebRTC and returns its MediaStream, if unavailable or blocked returns `null`
+* `Peer.screen` prompts the user for a display/window/tab (with audio when available) and adds the user's choice to a peer  and returns its MediaStream, if unavailable or blocked returns `null`
 ```ts
-const stream: MediaStream | void = await Media.screen()
+const stream: MediaStream | void = await Peer.screen()
 ```
 <br>
 
-* `Media.custom` uses custom constraints [[MDN]](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to add the resulting MediaStream to SimpleWebRTC and returns its MediaStream, if unavailable or blocked returns `null`
+* `Peer.custom` uses custom constraints [[MDN]](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to add the resulting MediaStream to a peer and returns its MediaStream, if unavailable or blocked returns `null`
 
 ```ts
-const stream: MediaStream | void = await Media.custom({
+const stream: MediaStream | void = await Peer.custom({
    video: true,  // default `false`
    audio: false, // default `false`
    screen: false // default `false`
 })
 ```
-callback syntax for `Media.custom`:
+callback syntax for `Peer.custom`:
 ```ts
-Media.custom( constraints, allow, block )
+Peer.custom( constraints, allow, block )
 ```
 <br>
 
