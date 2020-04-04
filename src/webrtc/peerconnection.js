@@ -2,7 +2,16 @@ export default ({ emit, on, config }) => {
     const candidates = []
     const datachannels = []
 
-    const PeerConnection = new RTCPeerConnection()
+    const PeerConnection = new RTCPeerConnection({
+        iceServers: [
+          {
+            urls: "stun:stun.l.google.com:19302",
+          },
+          {
+            urls: "stun:stun3.l.google.com:19302",
+          },
+        ]
+    })
 
     const AddIceCandidate = candidates => {
         if (!candidates) return
