@@ -3,14 +3,14 @@ export default ({ emit, on, config }) => {
     const datachannels = []
 
     const PeerConnection = new RTCPeerConnection({
-        iceServers: [
-          {
-            urls: "stun:stun.l.google.com:19302",
-          },
-          {
-            urls: "stun:stun3.l.google.com:19302",
-          },
-        ]
+        // iceServers: [
+        //   {
+        //     urls: "stun:stun.l.google.com:19302",
+        //   },
+        //   {
+        //     urls: "stun:stun3.l.google.com:19302",
+        //   },
+        // ]
     })
 
     const AddIceCandidate = candidates => {
@@ -18,10 +18,16 @@ export default ({ emit, on, config }) => {
 
         if (Array.isArray(candidates)) 
             for (const candidate of candidates) 
-                PeerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+                candidate
+                && candidate.candidate 
+                && candidate.candidate.length > 0 
+                && PeerConnection.addIceCandidate(new RTCIceCandidate(candidate))
 
         else 
-            PeerConnection.addIceCandidate(new RTCIceCandidate(candidates))
+            candidate
+            && candidate.candidate 
+            && candidate.candidate.length > 0 
+            && PeerConnection.addIceCandidate(new RTCIceCandidate(candidates))
 
         emit('log', 'added ice candidate(s)')
     }
@@ -136,11 +142,9 @@ export default ({ emit, on, config }) => {
     PeerConnection.onerror = event => emit('error', 'PeerConnection', event)
         
     PeerConnection.onicecandidate = event => {
-        if (event.candidate) {
-            emit('icecandidate', event.candidate)
-            candidates.push(event.candidate)
-            emit('log', 'found ice candidate')
-        }
+        emit('icecandidate', event.candidate)
+        candidates.push(event.candidate)
+        emit('log', 'found ice candidate')
     }
 
     PeerConnection.onicegatheringstatechange = event => {
