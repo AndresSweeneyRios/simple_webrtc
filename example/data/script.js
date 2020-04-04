@@ -5,20 +5,12 @@ const config = {
 	log: true
 }
 
-const Local = SimpleWebRTC(config).Peer()
+const peer = SimpleWebRTC(config).Peer()
 
-const Remote = SimpleWebRTC(config).Peer()
+peer.on('icecandidate', console.log)
 
-Local.offer().then( async offer => {
-    const answer = await Remote.answer(offer)
+peer.on('open', () => console.log('Open!'))
 
-    Local.open(answer)
+peer.on('message', console.log)
 
-    await Local.on('open')
-
-    console.log('Open!')
-
-    Remote.on('message', console.log)
-    
-    Local.send('abcdefg')
-})
+window.peer = peer
