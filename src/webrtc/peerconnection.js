@@ -3,14 +3,16 @@ export default ({ emit, on, config }) => {
     const datachannels = []
 
     const PeerConnection = new RTCPeerConnection({
-        // iceServers: [
+        iceServers: [
         //   {
         //     urls: "stun:stun.l.google.com:19302",
         //   },
+          { urls: "turn:206.189.201.78:3478", username: "username", credential: "key" }
         //   {
         //     urls: "stun:stun3.l.google.com:19302",
         //   },
-        // ]
+        ],
+        // sdpSemantics: "unified-plan"
     })
 
     const AddIceCandidate = candidates => {
@@ -24,9 +26,9 @@ export default ({ emit, on, config }) => {
                 && PeerConnection.addIceCandidate(new RTCIceCandidate(candidate))
 
         else 
-            candidate
-            && candidate.candidate 
-            && candidate.candidate.length > 0 
+            candidates
+            && candidates.candidate 
+            && candidates.candidate.length > 0 
             && PeerConnection.addIceCandidate(new RTCIceCandidate(candidates))
 
         emit('log', 'added ice candidate(s)')
