@@ -4,10 +4,10 @@ export default ({ emit, on, config }) => {
 
     const PeerConnection = new RTCPeerConnection({
         iceServers: [
-          {
-            urls: "stun:stun.l.google.com:19302",
-          },
-          { urls: "turn:206.189.201.78:3478", username: "username", credential: "key" }
+        //   {
+        //     urls: "stun:stun.l.google.com:19302",
+        //   },
+        //   { urls: "turn:206.189.201.78:3478", username: "username", credential: "key" }
         //   {
         //     urls: "stun:stun3.l.google.com:19302",
         //   },
