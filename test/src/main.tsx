@@ -5,7 +5,11 @@ import ReactDOM from 'react-dom/client'
 import { Peer } from "../../src"
 
 const host = Peer({
-  onSignal (signal) {
+  onLog(...args: any[]) {
+    console.log('[H]', ...args)
+  },
+
+  onSignal(signal) {
     // This is where you would connect to a signaling server
     // It passes over all offers, answers, and ICE candidates as a string
     client.receiveSignal(signal)
@@ -17,7 +21,11 @@ const host = Peer({
 })
 
 const client = Peer({
-  onSignal (signal) {
+  onLog(...args: any[]) {
+    console.log('[C]', ...args)
+  },
+
+  onSignal(signal) {
     host.receiveSignal(signal)
   },
 

@@ -263,7 +263,13 @@ export const Peer = (configOverride: Partial<Config>) => {
     flushCandidates()
   })
 
-  peerConnection.addEventListener('icecandidateerror', (event: RTCPeerConnectionIceErrorEvent) => {
+  peerConnection.addEventListener('icecandidateerror', (event) => {
+    if (!(event instanceof RTCPeerConnectionIceErrorEvent)) {
+      logger.error('icecandidateerror', "unknown event type")
+
+      return
+    }
+
     if (event.errorCode === 701 && config.suppressIce701) {
       return
     }
