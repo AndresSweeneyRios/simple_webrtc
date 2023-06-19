@@ -1,10 +1,37 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+
+import { Peer } from "../../src"
+
+const host = Peer({
+  onSignal (signal) {
+    // This is where you would connect to a signaling server
+    // It passes over all offers, answers, and ICE candidates as a string
+    client.receiveSignal(signal)
+  },
+
+  onMessage(message) {
+    console.log('[H]', message)
+  }
+})
+
+const client = Peer({
+  onSignal (signal) {
+    host.receiveSignal(signal)
+  },
+
+  onMessage(message) {
+    console.log('[C]', message)
+  }
+})
+
+host.createOffer().catch(console.error)
+
+host.sendMessage('hello client')
+client.sendMessage('hello host')
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <App />
   </React.StrictMode>,
 )
