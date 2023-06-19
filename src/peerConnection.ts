@@ -1,12 +1,21 @@
-import { config as defaultConfig, Config } from "./config"
+import { defaultConfig, Config } from "./config"
 import { Logger } from "./log"
 
+const DATA_CHANNEL_LABEL = "DATA"
+
+/**
+ * Generic event passed to a signaling server to simplify the tradeoff.
+ */
 export interface Signal {
   type: 'offer' | 'answer' | 'candidates'
   candidates?: RTCIceCandidate[]
   description?: RTCSessionDescriptionInit
 }
 
+/**
+ * SerializedSignal is used for type constraints.
+ * It's just a string.
+ */
 export type SerializedSignal = string
 
 const serializeSignal = (signal: Signal): SerializedSignal => {
@@ -17,9 +26,12 @@ const deserializeSignal = (serializeSignal: SerializedSignal): Signal => {
   return JSON.parse(serializeSignal)
 }
 
-const DATA_CHANNEL_LABEL = "DATA"
-
-export const Peer = (configOverride?: Partial<Config>, ) => {
+/**
+ * All the logic for connecting over WebRTC and processing signals.
+ * 
+ * @param configOverride Any custom configuration goes here
+ */
+export const Peer = (configOverride: Partial<Config>) => {
   // Config
   const config: Config = {
     ...defaultConfig,
@@ -32,6 +44,9 @@ export const Peer = (configOverride?: Partial<Config>, ) => {
   }
 
   // Helpers
+  /**
+   * Starting point for any connection. This will create a data channel and generate an offer signal.
+   */
   const createOffer = async () => {
     logger.log('Creating data channel...')
     
@@ -57,6 +72,9 @@ export const Peer = (configOverride?: Partial<Config>, ) => {
     config.onSignal(offerSerializedSignal)
   }
 
+  /**
+   * Parses an offer signal and generates an answer signal.
+   */
   const receiveOfferCreateAnswer = async (signal: Signal) => {
     logger.log('Processing offer...')
 
@@ -88,6 +106,9 @@ export const Peer = (configOverride?: Partial<Config>, ) => {
     flushCandidates()
   }
 
+  /**
+   * Parses an answer signal, completing SDP signaling.
+   */
   const receiveAnswer = async (signal: Signal) => {
     logger.log('Processing answer...')
 
@@ -102,6 +123,9 @@ export const Peer = (configOverride?: Partial<Config>, ) => {
     flushCandidates()
   }
 
+  /**
+   * Parses candidates signal to establish or reestablish a connection.
+   */
   const receiveCandidates = async (signal: Signal) => {
     if (signal.candidates === undefined) {
       logger.error(new Error("signal.candidates is null"))
@@ -114,6 +138,9 @@ export const Peer = (configOverride?: Partial<Config>, ) => {
     flushCandidates()
   }
 
+  /**
+   * Deserializes and parses any signal, simplifying the connection process.
+   */
   const receiveSignal = async (serializedSignal: SerializedSignal) => {
     const signal = deserializeSignal(serializedSignal)
 
@@ -146,6 +173,24 @@ export const Peer = (configOverride?: Partial<Config>, ) => {
     }
   }
 
+  /**
+   * Send a message over the current data channel. Will queue messages if the connection is lost.
+   */
+  const sendMessage = async (value: string | Blob | ArrayBuffer | ArrayBufferView) => {
+    try {
+      if (dataChannel === null || dataChannel.readyState !== 'open') {
+        await onOpen()
+      }
+  
+      dataChannel?.send(value as any)
+    } catch (error) {
+      logger.log(error)
+    }
+  }
+
+  /**
+   * Promisified version of {@link RTCPeerConnection}.onicegatheringstatechange, only resolving on complete.
+   */
   const onIceGatheringCompleted = () => new Promise<void>(resolve => {
     if (peerConnection.iceGatheringState === 'complete') {
       resolve()
@@ -164,18 +209,9 @@ export const Peer = (configOverride?: Partial<Config>, ) => {
     peerConnection.addEventListener('icegatheringstatechange', icegatheringstatechange)
   })
 
-  const sendMessage = async (value: string | Blob | ArrayBuffer | ArrayBufferView) => {
-    try {
-      if (dataChannel === null || dataChannel.readyState !== 'open') {
-        await onOpen()
-      }
-  
-      dataChannel?.send(value as any)
-    } catch (error) {
-      logger.log(error)
-    }
-  }
-
+  /**
+   * Promisified version of {@link RTCDataChannel}.onopen.
+   */
   const onOpen = () => new Promise<void>(resolve => {
     if (dataChannel?.readyState === 'open') {
       resolve()
@@ -196,8 +232,6 @@ export const Peer = (configOverride?: Partial<Config>, ) => {
   const peerConnection = new RTCPeerConnection(config.rtc)
 
   peerConnection.addEventListener('negotiationneeded', (event) => {
-    // peerConnection.setLocalDescription().catch(logger.error)
-
     logger.log('peerconnection', 'negotiationneeded', event)
   })
 
@@ -252,6 +286,11 @@ export const Peer = (configOverride?: Partial<Config>, ) => {
   // Data Channel
   let dataChannel: RTCDataChannel | null = null
 
+  /**
+   * Creates shared reference to data channel and subscribes to its events.
+   * 
+   * Will dispatch a special event to {@link peerConnection} for {@link onOpen}.
+   */
   const initDataChannel = (newDataChannel: RTCDataChannel) => {
     dataChannel = newDataChannel
 
@@ -278,6 +317,9 @@ export const Peer = (configOverride?: Partial<Config>, ) => {
   const localCandidates: RTCIceCandidate[] = []
   const remoteCandidates: RTCIceCandidate[] = []
 
+  /**
+   * Signals all outgoing candidates and adds all incoming candidates. 
+   */
   const flushCandidates = () => {
     if (localCandidates.length > 0) {
       config.onSignal(serializeSignal({
@@ -297,6 +339,7 @@ export const Peer = (configOverride?: Partial<Config>, ) => {
     }
   }
 
+  // Just in case it's not caught by one of our events
   setInterval(flushCandidates, 50)
   
   return {
