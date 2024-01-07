@@ -28,6 +28,11 @@ export interface Config {
   onSignal: (signal: SerializedSignal) => void
 
   /**
+   * Fired when the peer loses connection.
+   */
+  onDisconnect: () => void
+
+  /**
    * From MDN: "Error 701 indicates that none of the ICE candidates were able to successfully make contact with the STUN or TURN server."
    * 
    * This is basically inevitable, so you probably want to set this to "true".
@@ -50,15 +55,17 @@ export const defaultConfig: Config = {
 
   suppressIce701: true,
 
-  onLog: () => {},
+  onLog () {},
 
   onError (...args) {
     console.trace(...args)
   },
 
-  onMessage: () => {},
+  onMessage () {},
 
   onSignal () { 
     throw new Error("Can't connect: onSignal hasn't been configured") 
   },
+
+  onDisconnect () {},
 }

@@ -315,6 +315,12 @@ export const Peer = (configOverride: Partial<Config>) => {
 
       peerConnection.dispatchEvent(new Event('SWRTC_datachannel_open'))
     })
+
+    newDataChannel.addEventListener('close', () => {
+      logger.log('datachannel', 'close')
+
+      config.onDisconnect()
+    })
   }
 
   // Init
@@ -347,12 +353,19 @@ export const Peer = (configOverride: Partial<Config>) => {
 
   // Just in case it's not caught by one of our events
   setInterval(flushCandidates, 50)
+
+  // Cleanup
+  const disconnect = () => {
+    dataChannel?.close()
+    peerConnection.close()
+  }
   
   return {
     onOpen,
     createOffer,
     receiveSignal,
     sendMessage,
+    disconnect,
 
     advanced: {
       getPeerConnection: () => peerConnection,
